@@ -1,5 +1,4 @@
-.env
-/user_data
+/.env
 /functions/__pycache__
 /__pycache__
 /data

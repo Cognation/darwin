@@ -102,7 +102,7 @@ pip install -r requirements.txt
 
 5. Setup the frontend
 ```
-cd code
+cd ui
 npm install
 ```
 
@@ -124,7 +124,7 @@ python3 server.py
 ```
 #### Initialising the UI
 ```
-cd code
+cd ui
 npm start
 ```
 

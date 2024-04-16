@@ -1,0 +1,17 @@
+fastapi[all]
+PyPDF2
+openai 
+python-docx
+pandas
+requests
+beautifulsoup4
+google
+rank-bm25
+scikit-learn
+pymongo
+flask_cors
+python-decouple
+pillow
+openpyxl
+open-interpreter
+pickledb

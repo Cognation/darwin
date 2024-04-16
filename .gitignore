@@ -1,0 +1,7 @@
+.env
+/user_data
+/functions/__pycache__
+/__pycache__
+/code
+/data
+/utils/__pycache__

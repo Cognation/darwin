@@ -98,7 +98,6 @@ function Navbar() {
       formData.append("project_name", project_name);
 
       const backend_res = await fetch(
-        // "https://892b-2402-3a80-1c4b-a620-308e-2789-92e-11c5.ngrok-free.app/chat",
         `${process.env.REACT_APP_BACKEND}/create_project`,
         {
           method: "POST",

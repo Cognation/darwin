@@ -25,17 +25,12 @@ const Code = () => {
   const [language, setlanguage] = useState("python");
   const [input_msg, setinput_msg] = useState("");
   const [editor_width, seteditor_width] = useState(true);
-  const [fileName, setFileName] = useState("");
-  const [projects, setprojects] = useState([]);
   const [istyping, setistyping] = useState(false);
-
-  // const sessionId = uuidv4();
 
   const inputref = useRef(null);
 
   useEffect(() => {
     inputref?.current?.focus();
-    // fetchprojects();
   }, []);
 
   const msgref = useRef(null);
@@ -108,8 +103,6 @@ const Code = () => {
 
       const res_text = await backend_res.text();
 
-      // console.log("Res : ", res_text);
-
       if (!res_text) {
         alert("Some error occured");
         return;
@@ -158,47 +151,6 @@ const Code = () => {
           setLineData(ld);
         }
       }
-
-      // if (res_text[0] === "[" && res_text[1] === "{") {
-      //   const res_json = JSON.parse(res_text);
-
-      //   for(let item of res_json){
-      //       console.log("Item : " , item);
-      //   }
-
-      //   setlanguage(res_json[2]?.format);
-
-      //   setcode(res_json[2].content);
-
-      //   // console.log("JSon : ", res_json);
-
-      //   msgs.pop();
-      //   msgs.push({ text: res_json[1].content, sender: "bot" });
-      //   msgs.push({ text: res_json[4].content, sender: "bot" });
-      //   setMessages(msgs);
-
-      //   let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
-      //   ld.push(<TerminalInput>{res_json[3].content}</TerminalInput>);
-      //   setLineData(ld);
-      // } else {
-      //   msgs.pop();
-
-      //   try{
-      //     const internet_res = JSON.parse(res_text);
-
-      //     if(internet_res && internet_res.message){
-      //       console.log("Internet Res : " , internet_res.message);
-      //       msgs.push({ text: internet_res.message, sender: "bot" });
-      //       setMessages(msgs);
-      //       return;
-      //     }
-      //   }
-      //   catch(err){
-      //     console.error(err);
-      //   }
-      //   msgs.push({ text: res_text, sender: "bot" });
-      //   setMessages(msgs);
-      // }
     } catch (err) {
       console.log(err);
       return;
@@ -350,7 +302,6 @@ const Code = () => {
               seteditor_width(!editor_width);
             }}
           >
-            {/* <img src={editor_width ? arrow_left : arrow_right} alt="" /> */}
 
             {!editor_width ? (
               <svg
@@ -397,17 +348,6 @@ const Code = () => {
           >
             Code Editor
           </li>
-          {/*<li
-            className={`${styles.li} ${
-              selected === "screenshot" ? styles.selected : null
-            }`}
-            name="screenshot"
-            onClick={(e) => {
-              setselected("screenshot");
-            }}
-          >
-            Screenshot
-          </li>*/}
         </ul>
         <div className={styles.box}>
           {selected === "terminal" ? (
@@ -430,19 +370,6 @@ const Code = () => {
 
           {selected === "code_editor" ? (
             <div className={styles.box} key={2}>
-              {/* <CodeMirror 
-              value={code} 
-              height="500px" 
-              theme={vscodeDark} 
-              // theme="vs-dark"
-              options={{
-                inlineSuggest: true,
-                fontSize: "16px",
-                formatOnType: true,
-                autoClosingBrackets: true,
-                minimap: { scale: 10 }
-              }}
-              /> */}
 
               <Editor
                 className={styles.editor}
@@ -461,18 +388,6 @@ const Code = () => {
                 }}
                 onValidate={handleEditorValidation}
               />
-
-              {/* <Editor
-      value={code}
-      padding={10}
-      onValueChange={(code) => setcode(code)}
-      highlight={(code) => highlight(code, languages.js)}
-      style={{
-        fontFamily: "monospace",
-        fontSize: 17,
-        border: "1px solid black"
-      }}
-    /> */}
             </div>
           ) : null}
         </div>

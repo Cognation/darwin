@@ -1,0 +1,369 @@
+.navbar{
+    /* border-bottom: 2px solid black; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* margin-bottom: 100px; */
+    height: 45px;
+    top: 0;
+    position: fixed;
+    width: 100%;
+    /* background-color: white; */
+    background: rgb(255, 255, 255);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    flex-wrap: auto;
+    /* background-color: rgb(232, 232, 232 , 10); */
+}
+.ul{
+    display: flex;
+    list-style: none; 
+}
+
+.li{
+    margin-right: 30px;
+    color: white;
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    font-size: 15px;
+    padding: 20px 0px;
+    color: rgb(70, 69, 69);
+    text-decoration: none;
+}
+
+.li label{
+    color: rgb(255, 255, 255);
+}
+
+.li img{
+    width: 40px;
+    height: 40px;
+}
+
+.selected{
+    color: black;
+    /* animation: anurag2; */
+    animation-duration: 3s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes anurag2 {
+    from{
+        transform: translateY(0);
+    }
+    to{
+        transform: translateY(3px);
+    }
+}
+
+
+.buttonlogin{
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    margin-right: 10px;
+    overflow: none;
+    cursor: pointer;
+}
+
+.buttonsign{
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    margin-right: 10px;
+    background-color: rgb(110, 217, 219);
+    overflow: none;
+}
+
+.name{
+    color: rgb(8, 112, 114);
+    font-weight: 700;
+    font-size: 20px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    animation: name;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+}
+
+@keyframes name {
+    0%{
+        opacity: 85%;
+    }
+    50%{
+        opacity: 100%;
+    }
+    100%{
+        opacity: 85%;
+    }
+}
+
+.hove{
+    display: none;
+}
+
+.hoverli:hover > .hove{
+    display: block;
+    animation: hove;
+    animation-duration: .5s;
+    animation-fill-mode: both;
+    position: absolute;
+    margin-top: 60px;
+    width: 100vw;
+    left: 0;
+    top: 0;
+    height: fit-content;
+    /* border-bottom-style: ridge; */
+    box-shadow: 0px 0px 3px rgb(60, 59, 59); 
+    color: black;
+    z-index: 1;
+    background-color: rgb(228, 227, 227);
+
+}
+
+@keyframes hove {
+    from{
+        opacity: 0;
+    }
+    to{
+        opacity: 100;
+    }
+}
+
+
+.hover{
+    display: flex;
+    position:fixed;
+    margin-top: 122px;
+    /* border-top: 1px solid black; */
+    width: 100vw;
+    height: 60px;
+    margin-right: 100px;
+}
+
+.liicon{
+    width: 0.5px;
+    margin-left: 2px;
+}
+
+.hoverli:hover > .liicon{
+    animation: anurag;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes anurag {
+    from{
+        rotate: 0deg;
+    }
+    to{
+        rotate: 180deg;
+    }
+}
+
+@keyframes leave {
+    from{
+        rotate: 180deg;
+    }
+    to{
+        rotate: 0deg;
+    }
+}
+
+
+.hovefirst{
+    width: fit-content;
+}
+
+.whycarehover{
+    display: flex;
+    margin-left: 40px;
+    margin-top: 40px;
+    width: 600px;
+    height: 300px;
+}
+
+.hello{
+    width: 200px;
+    margin-left: 20px;
+    height: 100px;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.hello:hover{
+    background-color: rgb(177, 176, 176);
+}
+
+.hello1{
+    margin-bottom: 10px;
+}
+
+.muted{
+    color: rgb(83, 83, 83);
+    margin-top: 10px;
+}
+
+.statelist{
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-left: 10px;
+    width: fit-content;
+    cursor: pointer;
+}
+
+.statelist:hover{
+    background-color: rgb(195, 193, 193);
+}
+
+.hovefirst{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 400px;
+}
+
+.navsecondul{
+    display: flex;
+    align-items: center;
+}
+
+.avatar{
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+}
+
+
+.username{
+    margin: 0px 10px 0px 0px;
+    font-size: large;
+}
+
+.logout{
+    margin: 0px 10px 0px 0px;
+}
+
+.link{
+    text-decoration: none;
+}
+
+
+.language_select:hover {
+    background-color: #e0e0e0;
+    cursor: pointer;
+    }
+
+
+.language_select:focus {
+    outline: none;
+    }
+
+
+.language_select {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    padding: 2px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    width: fit-content;
+    margin-left: 10px;
+    -webkit-appearance: none; /* Remove default arrow in WebKit browsers */
+    -moz-appearance: none; /* Remove default arrow in Firefox */
+    }
+
+    .btn{
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    padding: 2px 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f1f1f1;
+    width: fit-content;
+    cursor: pointer;
+    }
+
+
+
+
+    .dropdown {
+        min-width: 200px;
+        margin-left: 3%;
+        position: relative;
+        display: inline-block;
+        font-family: Arial, sans-serif;
+      }
+      
+      .selectedOption {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      
+      .selectedOption:hover {
+        background-color: #f0f0f0;
+      }
+      
+      .options {
+        position: absolute;
+        top: 105%;
+        margin-top: 20px;
+        left: 0;
+        z-index: 1000;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px 5px 5px 5px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+      }
+      
+      .options li {
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 5px 5px 5px 5px;
+      }
+      
+      .options li:hover {
+        background-color: #f0f0f0;
+        border-radius: 5px 5px 5px 5px;
+      }
+      
+      .internet{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        margin-right: 3%;
+        min-width: 100px;
+      }
+
+      .dot{
+        min-width: 20px;
+      }
+
+      .greendot{
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        background-color: green;
+      }
+      .reddot{
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        background-color: red;
+      }

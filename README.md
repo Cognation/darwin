@@ -82,11 +82,11 @@ To install Darwin, follow these steps:
 
 1. Clone the Darwin repository:
 ```
-git clone <link>
+git clone https://github.com/Cognation/darwin.git
 ```
 2. Navigate to the project directory:
 ```
-cd <name>
+cd darwin
 ```
 3. Create a virtual environment/conda environment and install the required dependencies (you can use any virtual environment manager):
 ```
@@ -111,7 +111,7 @@ Now you just need to add your OpenAI key to a .env file, you can use this comman
 ```
 echo "OPENAI_API_KEY='<your_key>' " > .env
 ```
-All your data is stored on our machine, create your database using
+All your data is stored on your machine, create your database using:
 ```
 mkdir ./data && touch ./data/data.db && echo '{}' > ./data/data.db
 ```

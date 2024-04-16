@@ -98,7 +98,6 @@ function Navbar() {
       formData.append("project_name", project_name);
 
       const backend_res = await fetch(
-        // "https://892b-2402-3a80-1c4b-a620-308e-2789-92e-11c5.ngrok-free.app/chat",
         `${process.env.REACT_APP_BACKEND}/create_project`,
         {
           method: "POST",
@@ -179,7 +178,7 @@ function Navbar() {
                   />
                 </li>
               )}
-              {projectList.map((project, index) => (
+              {projectList && projectList.length>0 && projectList.map((project, index) => (
                 <li key={index} onClick={() => handleSelectProject(project)}>
                   {project.project_name}
                 </li>
@@ -188,8 +187,6 @@ function Navbar() {
           )}
         </div>
 
-        {/* <div className={styles.dropdown}>
-          <div className={styles.selectedOption}> */}
         <div className={styles.internet}>
           <div className={styles.dot}>
             {window.navigator.onLine ? (
@@ -200,33 +197,6 @@ function Navbar() {
           </div>
           Internet
         </div>
-        {/* </div>
-        </div> */}
-
-        {/* <div className={css.navfirst}>
-        <ul className={css.ul}>
-            <Link to={localStorage.getItem("token")?"/user":"/"} className={css.link}>
-              <li className={css.li}><img src={Logo_without_BG} alt="" srcset="" /></li>
-            </Link>
-        </ul>
-      </div> */}
-
-        {/* <div className={css.navsecond}>
-        <ul className={css.navsecondul}>
-            <li className={css.li}>
-            <label htmlFor=""> Project : </label>
-            <select
-              className={css.language_select}
-              onChange={handle_project_change}
-              name="project"
-              defaultValue={"url"}
-            >
-              <option value="url">Create new Peoject +</option>
-            </select></li>
-
-
-        </ul>
-      </div> */}
       </div>
     </>
   );

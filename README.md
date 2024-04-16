@@ -116,13 +116,13 @@ All your data is stored on your machine, initialise your database using:
 ```
 mkdir ./data && touch ./data/data.db && echo '{}' > ./data/data.db
 ```
-#### Spinning up Darwin
+## Spinning up Darwin
 You can start using Darwin with these two lines of command
-#### Starting the server
+### Starting the server
 ```
 python3 server.py
 ```
-#### Initialising the UI
+### Initialising the UI
 ```
 cd ui
 npm start

@@ -82,11 +82,11 @@ To install Darwin, follow these steps:
 
 1. Clone the Darwin repository:
 ```
-git clone <link>
+git clone https://github.com/Cognation/darwin.git
 ```
 2. Navigate to the project directory:
 ```
-cd <name>
+cd darwin
 ```
 3. Create a virtual environment/conda environment and install the required dependencies (you can use any virtual environment manager):
 ```
@@ -102,28 +102,29 @@ pip install -r requirements.txt
 
 5. Setup the frontend
 ```
-cd code
+cd ui
 npm install
 ```
 
 ### How to use
 Now you just need to add your OpenAI key to a .env file, you can use this command:
 ```
-echo "OPENAI_API_KEY='<your_key>' " > .env
+echo "OPENAI_API_KEY='<your_OpenAI_key>' " > .env
+export OPENAI_API_KEY=<your_OpenAI_key>
 ```
-All your data is stored on our machine, create your database using
+All your data is stored on your machine, initialise your database using:
 ```
 mkdir ./data && touch ./data/data.db && echo '{}' > ./data/data.db
 ```
-#### Spinning up Darwin
+## Spinning up Darwin
 You can start using Darwin with these two lines of command
-#### Starting the server
+### Starting the server
 ```
 python3 server.py
 ```
-#### Initialising the UI
+### Initialising the UI
 ```
-cd code
+cd ui
 npm start
 ```
 

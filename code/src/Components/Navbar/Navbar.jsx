@@ -33,7 +33,7 @@ function Navbar() {
       );
 
       const data = JSON.parse(await projects.text());
-      console.log("Projects : ", data);
+      // console.log("Projects : ", data);
 
       setprojectlist(data);
     } catch (err) {

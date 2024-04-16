@@ -1,20 +1,9 @@
-from .dalle import imagegenerator
 from .web_api import web_search
-from .weather_api import get_weather
-from .code_exec import code_exec
-from .data_analysis import data_analysis
-from .code_writer import code_writer
-from .code_interpret import code_interpret
 from .coder import coder
-from .web_api import web_search
 function_dict = {
-    "generate_image" : imagegenerator,
-    "web_search" : web_search, 
-    "code_exec" : code_exec,
-    "get_weather":get_weather,
-    "data_analysis":data_analysis,
-    "code_writer":code_writer,
-    "code_interpret":code_interpret,
+    #"generate_image" : imagegenerator,
+    #"get_weather":get_weather,
+   # "data_analysis":data_analysis,
     "coder":coder,
     "web_search":web_search
 }

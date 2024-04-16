@@ -9,7 +9,6 @@ import Terminal, {
   TerminalOutput,
 } from "react-terminal-ui";
 import Editor from "@monaco-editor/react";
-import { v4 as uuidv4 } from "uuid";
 
 const Code = () => {
   const {

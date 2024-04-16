@@ -12,7 +12,6 @@ from PIL import Image
 import io
 import mimetypes
 import pandas as pd
-from pymongo import MongoClient
 import asyncio
 from utils.process import *
 from utils.fileparse import *
@@ -49,13 +48,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # import env
-from dotenv import load_dotenv
-load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ## Initialize OpenAI instance
 # openai_api_key = config('OPENAI_API_KEY')
 # os.environ["OPENAI_API_KEY"] = openai_api_key
-openai = OpenAI(api_key=openai_api_key)
+openai = OpenAI(api_key=OPENAI_API_KEY)
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 # Initialize MongoDB client and database
 # cluster_url = os.getenv('CLUSTER_URL')

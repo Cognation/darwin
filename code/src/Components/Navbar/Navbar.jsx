@@ -20,50 +20,67 @@ function Navbar() {
   }, []);
 
   const getprojects = async () => {
-    const projects = await fetch(`${process.env.REACT_APP_BACKEND}/get_project_ids`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        type: "formData",
-      },
-    });
+    try {
+      const projects = await fetch(
+        `${process.env.REACT_APP_BACKEND}/get_project_ids`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            type: "formData",
+          },
+        }
+      );
 
-    const data = JSON.parse(await projects.text());
-    // console.log("Projects : ", data);
+      const data = JSON.parse(await projects.text());
+      console.log("Projects : ", data);
 
-    setprojectlist(data);
+      setprojectlist(data);
+    } catch (err) {
+      console.error("Error in getprojects. : ", err);
+    }
   };
 
   const [isOpen, setIsOpen] = useState(false);
   const [isnew, setisnew] = useState(false);
 
   const handleSelectProject = async (project) => {
-    setIsOpen(false);
-    if (isnew) setisnew(false);
-    setselectedProject(project.project_name);
-    setselectedProject_id(project.project_id);
+    try {
+      setIsOpen(false);
+      if (isnew) setisnew(false);
+      setselectedProject(project.project_name);
+      setselectedProject_id(project.project_id);
 
-    const formData = new FormData();
-    formData.append("project_id", project.project_id);
+      const formData = new FormData();
+      formData.append("project_id", project.project_id);
 
-    const chat = await fetch(`${process.env.REACT_APP_BACKEND}/get_project_data`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        type: "formData",
-      },
-      body : formData,
-    });
+      const chat = await fetch(
+        `${process.env.REACT_APP_BACKEND}/get_project_data`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            type: "formData",
+          },
+          body: formData,
+        }
+      );
 
-    const data = JSON.parse(await chat.text());
-    // console.log("Chat History : " , data.OI_chat);
-    const chat_history = data.OI_chat;
-    let msgs = [];
+      const data = JSON.parse(await chat.text());
+      // console.log("Chat History : " , data.OI_chat);
+      const chat_history = data.OI_chat;
+      let msgs = [];
 
-    for(const item of chat_history){
-      msgs.push({ text: item?.User? item?.User : item?.Assistant, sender: item?.User?"user":"bot" });
+      for (const item of chat_history) {
+        msgs.push({
+          text: item?.User ? item?.User : item?.Assistant,
+          sender: item?.User ? "user" : "bot",
+        });
+      }
+      setMessages(msgs);
+    } catch (err) {
+      console.error("Error in get chat. : ", err);
     }
-    setMessages(msgs);
   };
 
   const newprojectref = useRef(null);
@@ -73,36 +90,40 @@ function Navbar() {
   }, [isnew]);
 
   const handleCreateNewProject = async (project_name) => {
-    setIsOpen(false);
-    // console.log("Create new project.");
+    try {
+      setIsOpen(false);
+      // console.log("Create new project.");
 
-    const formData = new FormData();
-    formData.append("project_name", project_name);
+      const formData = new FormData();
+      formData.append("project_name", project_name);
 
-    const backend_res = await fetch(
-      // "https://892b-2402-3a80-1c4b-a620-308e-2789-92e-11c5.ngrok-free.app/chat",
-      `${process.env.REACT_APP_BACKEND}/create_project`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          type: "formData",
-        },
-        body: formData,
-      }
-    );
+      const backend_res = await fetch(
+        // "https://892b-2402-3a80-1c4b-a620-308e-2789-92e-11c5.ngrok-free.app/chat",
+        `${process.env.REACT_APP_BACKEND}/create_project`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            type: "formData",
+          },
+          body: formData,
+        }
+      );
 
-    const res_text = await backend_res.text();
+      const res_text = await backend_res.text();
 
-    const data = JSON.parse(res_text);
+      const data = JSON.parse(res_text);
 
-    // console.log("Create project res : ", data.project_id);
-    // console.log("Create project res : ", data.project_name);
+      // console.log("Create project res : ", data.project_id);
+      // console.log("Create project res : ", data.project_name);
 
-    setselectedProject(data.project_name);
-    setselectedProject_id(data.project_id);
-    getprojects();
-    setMessages([]);
+      setselectedProject(data.project_name);
+      setselectedProject_id(data.project_id);
+      getprojects();
+      setMessages([]);
+    } catch (err) {
+      console.error("Error in create project. : ", err);
+    }
   };
 
   return (

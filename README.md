@@ -109,9 +109,10 @@ npm install
 ### How to use
 Now you just need to add your OpenAI key to a .env file, you can use this command:
 ```
-echo "OPENAI_API_KEY='<your_key>' " > .env
+echo "OPENAI_API_KEY='<your_OpenAI_key>' " > .env
+export OPENAI_API_KEY=<your_OpenAI_key>
 ```
-All your data is stored on your machine, create your database using:
+All your data is stored on your machine, initialise your database using:
 ```
 mkdir ./data && touch ./data/data.db && echo '{}' > ./data/data.db
 ```

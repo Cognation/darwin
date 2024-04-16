@@ -1,12 +1,12 @@
-import requests
-from interpreter import interpreter
+# #import requests
+# #from interpreter import interpreter
 
-def code_exec(query):
-    code_block = query['code_block']
-    language = query['language']
+# def code_exec(query):
+#     code_block = query['code_block']
+#     language = query['language']
 
-    out = interpreter.computer.run(language, code_block)
-    print(out)
+#     out = interpreter.computer.run(language, code_block)
+#     print(out)
 
 
 # sampleQuery = {

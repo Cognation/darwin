@@ -11,7 +11,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 interpreter.llm.max_tokens = 1000
 interpreter.llm.temperature = 0.7
 interpreter.auto_run = True
-interpreter.custom_instructions = "Your name is ENIGMA."
+interpreter.custom_instructions = "Your name is ENIGMA. Run all pip commands with -y"
 
 def make_query(query, chat):
     q = "Based on the following context:\n" + json.dumps(chat) + "\n\nAnswer the following question:\n" + query

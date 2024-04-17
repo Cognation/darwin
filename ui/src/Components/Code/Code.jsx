@@ -81,7 +81,6 @@ const Code = () => {
     let msgs = messages;
     msgs.push({ text: message, sender: "user" });
     let codee = "";
-    let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
 
     const formData = new FormData();
     formData.append("project_id", selectedProject_id);
@@ -147,6 +146,7 @@ const Code = () => {
         }
 
         if (item?.type === "console" && item?.format === "output") {
+          let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
           ld.push(<TerminalInput>{item?.content}</TerminalInput>);
           setLineData(ld);
         }

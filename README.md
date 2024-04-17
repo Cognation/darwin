@@ -24,7 +24,7 @@ Darwin is the first in the series of multiple AI Engineers with the capability t
 The idea behind Darwin is to create an AI SWE Intern to assist in basic tasks. Whether you require assistance in creating a new feature, resolving a bug, or building an entire project from the ground up, Darwin is ready to support you every step of the way.
 
 > [!NOTE]
-> Darwin is being developed after the influence from [Devin](https://www.cognition-labs.com/introducing-devin) and [Devika](https://github.com/stitionai/devika). Starting as an alternative to an intern, we aim to eventually reach the competency of an ML/AI Engineer.
+> Darwin is built by taking inspiration from [Devin](https://www.cognition-labs.com/introducing-devin) and [Devika](https://github.com/stitionai/devika). Starting as an alternative to a Software Engineering Intern, we aim to eventually reach the competency of an SDE/ML/AI Engineer.
 
 ## Key Features
 

@@ -130,7 +130,7 @@ function Navbar() {
       <div className={css.navbar}>
         <div
           className={styles.dropdown}
-          onMouseEnter={() => {
+          onClick={() => {
             setIsOpen(true);
           }}
         >
@@ -139,7 +139,6 @@ function Navbar() {
             onClick={() => setIsOpen(!isOpen)}
           >
             {selectedProject ? selectedProject : "Select Project"}
-            <i className={`fas fa-chevron-${isOpen ? "up" : "down"}`} />
           </div>
           {isOpen && (
             <ul

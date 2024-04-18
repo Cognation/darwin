@@ -33,6 +33,7 @@ The idea behind Darwin is to create an AI SWE Intern to assist in basic tasks. W
 - 📚 Conducts thorough research to gather pertinent information
 - 💡 Engages in brainstorming sessions to generate innovative ideas
 - 💻 Writes code in multiple programming languages proficiently
+- ⚙️ Executing code and debugging using internet to assess discussions and forums, just like software engineers do 😉!
 
 ## Roadmap for Development
 

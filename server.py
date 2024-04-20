@@ -47,24 +47,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# import env
-env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(env_path)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-## Initialize OpenAI instance
-# openai_api_key = config('OPENAI_API_KEY')
-# os.environ["OPENAI_API_KEY"] = openai_api_key
-openai = OpenAI(api_key=OPENAI_API_KEY)
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-
-# Initialize MongoDB client and database
-# cluster_url = os.getenv('CLUSTER_URL')
-# mongoclient = MongoClient(cluster_url)
-#db = mongoclient.accintia 
-# chatdb = db.documentchat
-# collection = db.parallel
-# file_collection = db.collection
-# file_collection_name = file_collection.name
 
 import pickledb
 db = pickledb.load('./data/data.db', True) 
@@ -162,13 +144,19 @@ async def get_project(request: Request):
 
     
 
-@app.post("/delete_project") # deletes the project
+@app.delete("/delete_project") # deletes the project
 async def delete_project(request: Request):
     data = await request.form()
     project_id = data.get("project_id")
-    # structure of db -> { project_id: ...data}
-    db.rem(project_id)
-    return "Project deleted"
+    if(project_id == 'all'):
+        for key in db.getall():
+            db.rem(key)
+        return {"message": "All projects deleted successfully"}
+    for key in db.getall():
+        if key == project_id:
+            db.rem(key)
+            return {"message": "Project deleted successfully"}
+    return {"message": "Project not found"}
     
 @app.get("/get_project_ids") # returns key value pairs of id and project name
 async def get_projects():
@@ -193,7 +181,6 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     """
     data = await request.form()
     project_id = data.get("project_id")
-    session_id = data.get("session_id")
     customer_message = data.get("customer_message")
     # content = ""
     # secondary_knowledge = ""
@@ -241,18 +228,6 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             old = old + [{"Assistant":server_response}]
             await update_global_state("OI_chat",old)
         print(chat)
-        """
-        collection.update_one(
-            {"project_id": project_id},
-            {
-                "$set": {
-                    "assistants.$.chat": chat,
-                    #"assistants.$.file_id": file_id,  # Replace with the actual value you want to set
-                    "assistants.$.session_id":session_id
-                }
-            }
-        )
-        """
         print("ITER: ",iter)
         if(not iter):
             break
@@ -321,4 +296,7 @@ async def chatGPT(customer_message,chat):
 # start the server
 if __name__ == "__main__":
     import uvicorn
+    load_dotenv()
+    print(os.environ["OPENAI_API_KEY"])
+    openai = OpenAI(api_key=openai_api_key)
     uvicorn.run(app, host="0.0.0.0", port=8080)

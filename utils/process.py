@@ -153,8 +153,8 @@ def process_assistant_data():
 
         IMP : YOU CAN ONLY CALL ONE FUNCTION.
         IMP : You can set ITER=True if you want to look at function responses and call other functions or reply to the user.
+        IMP : You should always review the function response and decide whether to call other functions or reply to the user by setting ITER=True or False.
         NOTE : the function call is outputted within ``` within a list to separate them from dialogues!
-
 
         FUNCTIONS
         %%%%%%

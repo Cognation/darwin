@@ -112,6 +112,10 @@ Now you just need to add your OpenAI key to a .env file, you can use this comman
 echo "OPENAI_API_KEY='<your_OpenAI_key>' " > .env
 export OPENAI_API_KEY=<your_OpenAI_key>
 ```
+If you are a windows user, set your OpenAI key using
+```bash
+setx OPENAI_API_KEY "your-api-key-here"
+```
 All your data is stored on your machine, initialise your database using:
 ```
 mkdir ./data && touch ./data/data.db && echo '{}' > ./data/data.db

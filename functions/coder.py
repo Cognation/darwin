@@ -1,12 +1,16 @@
 import os
 from interpreter import interpreter
-from dotenv import load_dotenv
 import json
+from dotenv import load_dotenv
+
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
+os.environ["OPENAI_API_KEY"] = openai_api_key
+
+
+interpreter.llm.api_key = openai_api_key
 interpreter.llm.model = "gpt-3.5-turbo"
 
-env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(env_path)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 interpreter.llm.max_tokens = 1000
 interpreter.llm.temperature = 0.7

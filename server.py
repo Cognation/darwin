@@ -115,15 +115,26 @@ def retrieve_file_from_mongodb(file_id, collection_name):
     return file_data.read(), mime_type
 
 
-def get_folder_structure(root_dir):
-    folder_structure = {}
-    for root, dirs, files in os.walk(root_dir):
-        current_dir = folder_structure
-        for dir in root.split(os.sep):
-            current_dir = current_dir.setdefault(dir, {})
-        for file in files:
-            current_dir[file] = None
-    return folder_structure
+def get_folder_structure(dir_path,parent=""):
+    is_directory = os.path.isdir(dir_path)
+    name = os.path.basename(dir_path)
+    relative_path = os.path.relpath(dir_path, os.path.dirname(dir_path))
+
+    directory_object = {
+        'parent': os.path.dirname(dir_path),
+        'path': relative_path,
+        'name': name,
+        'type': 'directory' if is_directory else 'file',
+    }
+
+    if is_directory:
+        children = []
+        for child in os.listdir(dir_path):
+            child_path = os.path.join(dir_path, child)
+            children.append(get_folder_structure(child_path,parent=dir_path))
+        directory_object['children'] = children
+
+    return directory_object
 
 @app.get("/folder_structure")
 async def folder_structure(request:Request):

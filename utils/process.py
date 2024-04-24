@@ -86,16 +86,22 @@ function_call_example = """
     {
         "function_name": "web_search",
         "function_parameters": {
-            "query": "no module named 'sqlalchemy'"
-        },
-        "ITER": "True"
+            "query": "what is bubble sort in python?"
+        }
     },
+
     {
         "function_name": "coder",
         "function_parameters": {
-            "query": "explain bubble sorting algorithm"
+            "query": "write a python code for bubble sort algorithm."
         },
-        "ITER": "False"
+    },
+
+    {
+        "function_name": "summary_text",
+        "function_parameters": {
+            "message": "The bubble sort algorithm is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. I have written relevant code for the same..."
+        }
     }
 ]
 ```
@@ -104,6 +110,17 @@ function_call_example = """
 functions = """
 [
     {
+        "function_name": "web_search",
+        "description": "Searches the web for dynamic and updating information. This can be used for searching and debugging errors OR retrieving relevant code documentation for answering web queries.",
+
+        "parameters" : {
+            "query": {
+                "description": "takes input as search query which can be searched on internet. Returns comprehensive answer to the query"
+            }
+        }
+    },
+
+    {
         "function_name": "coder",
         "description": "helps you to explain a code, write a piece of code or execute a code or command line executions",
 
@@ -111,28 +128,21 @@ functions = """
             "query": {
                 "description": "textual input in natural language for the code to explain, write or execute"
             }
-        },
-        "ITER": "True" or "False"
-        "description": helps you decide whether to look at a functions response and call other functions.
-    }
-]
+        }
+    },
 
-[
+
     {
-        "function_name": "web_search",
-        "description": "Searches the web for dynamic and updating information. This can be used for searching and debugging errors OR retrieving material for answering questions",
-
+        "function_name": "summary_text",
+        "description": "Used to send message, concluding your work to the senior devs if you are satisfied with the function response",
         "parameters" : {
-            "query": {
-                "description": "takes input as search query which can be searched on internet. Returns comprehensive answer to the query"
+            "message": {
+                "description": "message to send to the user. Should contain a summary of the function response."
             }
-        },
-        "ITER": "True" or "False"
-        "description": helps you decide whether to look at a functions response and call other functions.
+        }
     }
 ]
-
-NOTE : YOU CAN ONLY CALL ONE FUNCTION.
+```
 """
 
 
@@ -144,30 +154,17 @@ def process_assistant_data():
     #    custom_functions+=user_function
             
     system_prompt = f"""
-        You are a Junior Software Engineer, assisting Senior Developers. Your Job is to write, execute and explain code, and to answer all questions asked with the help pf the functions provided.
-        You DO NOT have any knowledge base of your own.
-        Your task is to determine which function to call based on the input.
-        You also have access to some FUNCTIONS that you can call to assist you.
-        The functions can only be called if you have all the parameters for that function.
-        The way to call the function is shown in the example FUNCTION CALLING.
+        You are Darwin, an AI Software Engineer Intern, Your job is to assist the user in their queries.
+        You have a simple job to design a workflow in the form of a list of function calls with no longer than 3 functions in the list.
+        The list should always have one occurence of the function summary_text and that too at the end. This should contain your final response to the user after reviewing the output of the other functions.
+        An example of a function call having 3 functions is given below:
 
-        IMP : YOU CAN ONLY CALL ONE FUNCTION.
-        IMP : You can set ITER=True if you want to look at function responses and call other functions or reply to the user.
-        IMP : You should always review the function response and decide whether to call other functions or reply to the user by setting ITER=True or False.
-        NOTE : the function call is outputted within ``` within a list to separate them from dialogues!
-
-        FUNCTIONS
-        %%%%%%
-        {functions}
-        %%%%%%
-
-
-        FUNCTION CALLING
+        EXAMPLE FUNCTION CALL
         %%%%%%
         {function_call_example}
         %%%%%%
 
-        FOLLOW ALL THE INSTRUCTIONS AND YOU WILL GET A $200000 RAISE, ELSE YOU WILL BE FIRED!
+        FOLLOW ALL INSTRUCTIONS CAREFULLY.
         """
     return system_prompt
 

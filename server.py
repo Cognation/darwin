@@ -21,6 +21,7 @@ from functions.web_api import *
 from functions.call_function import function_dict
 from functions.extract_web_links import extract_links, scrape_pdf
 
+
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -58,8 +59,8 @@ async def update_db(project_id, key, val):
 
 # Constants
 MODEL_NAME =  "gpt-4-0125-preview"  # config('MODEL_NAME')
-MAX_TOKENS = 150
-TEMPERATURE = 0.7
+MAX_TOKENS = 1000
+TEMPERATURE = 1.1
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):
@@ -113,6 +114,23 @@ def retrieve_file_from_mongodb(file_id, collection_name):
 
     return file_data.read(), mime_type
 
+
+def get_folder_structure(root_dir):
+    folder_structure = {}
+    for root, dirs, files in os.walk(root_dir):
+        current_dir = folder_structure
+        for dir in root.split(os.sep):
+            current_dir = current_dir.setdefault(dir, {})
+        for file in files:
+            current_dir[file] = None
+    return folder_structure
+
+@app.get("/folder_structure")
+async def folder_structure(request:Request):
+    data = await request.form()
+    root_dir = data["root_dir"]
+    structure = get_folder_structure(root_dir)
+    return structure
 
 @app.post("/create_project") # creates a new project and updates the global state with the project data
 async def create_project(request: Request):
@@ -198,60 +216,51 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     # parse chat for openai prompt
     openai_chat = json.dumps(chat)
     await update_global_state("OI_chat",chat)
+    funtion_response = ""
+    coder_response = ""
+    web_search_response = ""
     while(True):
-        res = await chatGPT(customer_message,openai_chat)
-        result = res.get("result")
-        print("Res.Iter: ",res.get("iter"))
+        res = await chatGPT(customer_message,openai_chat,coder_response,web_search_response)
         function_response = res.get("function_response")
-        func = res.get("func")
-        iter = bool(res.get("iter"))
-        print("\n\niter",iter)
-        if func:
-            # chat = add_chat_log(func, function_response.get(func), chat)
-            server_response = function_response.get(func)
-            if(func=="coder"):
-                for obj in server_response:
-                    if obj["role"]=="assistant" and obj["type"]=="message":
-                        old = await get_global_state("OI_chat")
-                        old = old + [{"Assistant":obj["content"]}]
-                        await update_global_state("OI_chat",old)     
-                old = await get_global_state("OI_history")
-                await update_global_state("OI_history",old+function_response.get(func))
-            if(func=="web_search"):
-                old = await get_global_state("OI_chat")
-                old = old + [{"Assistant":server_response["message"]}]
-                await update_global_state("OI_chat",old)
-        else:
-            # chat = add_chat_log("assitant",result,chat)
-            server_response = result
-            old = await get_global_state("OI_chat")
-            old = old + [{"Assistant":server_response}]
-            await update_global_state("OI_chat",old)
-        print(chat)
-        print("ITER: ",iter)
-        if(not iter):
-            break
-    await update_db(project_id, "OI_chat", await get_global_state("OI_chat"))
-    await update_db(project_id, "OI_history", await get_global_state("OI_history"))
-    return server_response
+        functions = res.get("functions")
+        # chat = add_chat_log(func, function_response.get(func), chat)
+        # server_response = function_response.get(functions)
+        if('coder' in functions):
+            # for obj in server_response:
+            #     if obj["role"]=="assistant" and obj["type"]=="message":
+            #         old = await get_global_state("OI_chat")
+            #         old = old + [{"Assistant":obj["content"]}]
+            #         await update_global_state("OI_chat",old)     
+            # old = await get_global_state("OI_history")
+            # # await update_global_state("OI_history",old+function_response.get(func))
+            # coder_response = server_response
+            print("coder_response ok")
+        if('web_search' in functions):
+            # old = await get_global_state("OI_chat")
+            # old = old + [{"Assistant":server_response["message"]}]
+            # await update_global_state("OI_chat",old)
+            # web_search_response = server_response
+            print("web_search_response ok")
+        if('summary_text' in functions):
+            return {"message":res["function_response"]["summary_text"]}
+        break
 
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(customer_message,chat):
+async def chatGPT(customer_message,chat,coder_response,web_search_response):
     res ={
         "result":None,
         "function_response":None,
-        "func":None,
-        "iter":False
+        "functions":None,
     }
     prompt = process_assistant_data()
     message = [
-        {"role": "system", "content": prompt},
+        {"role": "user", "content": prompt},
         {"role": "assistant", "content":chat},
         {"role": "user", "content": customer_message},
     ]
-    print("\nMessage to GPT: \n", message)
+    print("\nMessage to GPT: \n", prompt)
     gpt_response = openai.chat.completions.create(
         model=MODEL_NAME,
         messages=message,
@@ -263,31 +272,31 @@ async def chatGPT(customer_message,chat):
 
     functions = extract_function_names(result)
     res["result"] = result    
-    res["iter"] = bool(extract_iter(result))
 
     # print("\nChat: \n", chat)    
     print("\nFunctions: \n", functions)
-    
+    res["functions"] = functions
     function_response = dict()
     if functions:
         parameters = extract_function_parameters(result)
         for func, parameter in zip(functions, parameters):
-            res["func"] = func
             print(func)
             print(parameter)
             try:
-                if func in function_dict:
-                    if func == "coder":
-                        oichat = await get_global_state("OI_chat")
-                        oihistory = await get_global_state("OI_history")
-                        query = parameter['query']
-                        coder_response = (coder(query, oichat, oihistory))
-                        function_response.update({"coder":coder_response})
-                    elif func == "web_search":
-                        response = (web_search(parameter['query']))
-                        function_response.update({"web_search":response})
-                    else:
-                        function_response.update(function_dict[func](**parameter))
+                if func == "coder":
+                    oichat = await get_global_state("OI_chat")
+                    oihistory = await get_global_state("OI_history")
+                    query = parameter['query']
+                    coder_response = (coder(query, oichat, oihistory))
+                    function_response.update({"coder":coder_response})
+                elif func == "web_search":
+                    response = (web_search(parameter['query']))
+                    function_response.update({"web_search":response})
+                elif func == "summary_text":
+                    response = (parameter['message'])
+                    function_response.update({"summary_text":response})
+                else:
+                    pass
             except Exception as e:
                 print(f"Error calling the function {func} with parameters {parameter}: {e}")
     res["function_response"] = function_response

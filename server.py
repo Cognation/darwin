@@ -136,53 +136,36 @@ async def folder_structure(request:Request):
 async def create_project(request: Request):
     data = await request.form()
     project_name = data.get("project_name")
-    project_id = str(uuid4()) 
-    db.set(project_id, {"project_name": project_name, "OI_history": [], "OI_chat": []})
-    await update_global_state("project_id", project_id)
+    db.set(project_name,{"OI_chat":[],"OI_history":[]})
     await update_global_state("OI_chat", [])
     await update_global_state("OI_history", [])
-    return {"project_id": project_id, "project_name": project_name}
+    return {"project_name": project_name}
 
 @app.post("/get_project_data") # updates the global state with the project data
 async def get_project(request: Request):
     data = await request.form()
-    project_id = data.get("project_id")
-    all = db.getall()
-    dict = {}
-    for key in all:
-        if key == project_id:
-            project_name = db.get(key)["project_name"]
-            oichat = db.get(key)["OI_chat"]
-            oihistory = db.get(key)["OI_history"]
-            dict = {"project_id": project_id, "project_name": project_name, "OI_chat": oichat, "OI_history": oihistory}
-            await update_global_state("project_id", project_id)
-            await update_global_state("OI_chat", oichat)
-            await update_global_state("OI_history", oihistory)
-    return dict
-
-    
+    project_name = data.get("project_name")
+    project = db.get(project_name)
+    await update_global_state("OI_chat", project["OI_chat"])
+    await update_global_state("OI_history", project["OI_history"])
+    return {"OI_chat": project["OI_chat"], "OI_history": project["OI_history"]}
 
 @app.delete("/delete_project") # deletes the project
 async def delete_project(request: Request):
     data = await request.form()
-    project_id = data.get("project_id")
-    if(project_id == 'all'):
-        for key in db.getall():
-            db.rem(key)
-        return {"message": "All projects deleted successfully"}
+    project_name = data.get("project_name")
     for key in db.getall():
-        if key == project_id:
+        if key == project_name:
             db.rem(key)
             return {"message": "Project deleted successfully"}
     return {"message": "Project not found"}
     
-@app.get("/get_project_ids") # returns key value pairs of id and project name
+@app.get("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
     for key in db.getall():
-        project_id = key
-        project_name = db.get(key)["project_name"]
-        list.append({"project_id": project_id, "project_name": project_name})
+        project_name = key
+        list.append(project_name) 
     return list
 
 @app.post("/chat")

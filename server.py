@@ -143,10 +143,25 @@ async def folder_structure(request:Request):
     structure = get_folder_structure(root_dir)
     return structure
 
+app.get("/get_file")
+async def get_file(request: Request):
+    data = await request.form()
+    file_name = data.get("file_name")
+    file_data = ""
+    pwd = os.getcwd()
+    path = os.path.join(pwd, file_name)
+    with open(path, 'rb') as file:
+        file_data = file.read()
+    return file_data
+
 @app.post("/create_project") # creates a new project and updates the global state with the project data
 async def create_project(request: Request):
     data = await request.form()
     project_name = data.get("project_name")
+    # check if project already exists
+    for key in db.getall():
+        if key == project_name:
+            return {"message": "Project already exists"}
     db.set(project_name,{"OI_chat":[],"OI_history":[]})
     await update_global_state("OI_chat", [])
     await update_global_state("OI_history", [])
@@ -185,10 +200,8 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     """
     FORM DATA FORMAT:
     {
-        "unique_id": "user_id",
-        "assistant_name": "assistant_name",
-        "session_id": "session_id",
-        "customer_message": "message",
+        "project_name": "project_name",
+        "customer_message": "message"
     }
     """
     data = await request.form()
@@ -250,7 +263,7 @@ async def chatGPT(customer_message,chat,coder_response,web_search_response):
     }
     prompt = process_assistant_data()
     message = [
-        {"role": "user", "content": prompt},
+        {"role": "system", "content": prompt},
         {"role": "assistant", "content":chat},
         {"role": "user", "content": customer_message},
     ]

@@ -1,10 +1,10 @@
 from .web_api import web_search
-from .coder import coder
+from .coder import Coder
 function_dict = {
     #"generate_image" : imagegenerator,
     #"get_weather":get_weather,
    # "data_analysis":data_analysis,
-    "coder":coder,
+    "coder":Coder.code,
     "web_search":web_search
 }
 

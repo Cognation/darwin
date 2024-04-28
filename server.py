@@ -284,6 +284,7 @@ async def chatGPT(customer_message,chat,coder_response,web_search_response):
     print("\nFunctions: \n", functions)
     res["functions"] = functions
     function_response = dict()
+    coder = Coder()
     if functions:
         parameters = extract_function_parameters(result)
         for func, parameter in zip(functions, parameters):
@@ -294,7 +295,7 @@ async def chatGPT(customer_message,chat,coder_response,web_search_response):
                     oichat = await get_global_state("OI_chat")
                     oihistory = await get_global_state("OI_history")
                     query = parameter['query']
-                    coder_response = (coder(query, oichat, oihistory))
+                    coder_response = (coder.code(query))
                     function_response.update({"coder":coder_response})
                 elif func == "web_search":
                     response = (web_search(parameter['query']))

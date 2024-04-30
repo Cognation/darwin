@@ -52,10 +52,9 @@ app.add_middleware(
 import pickledb
 db = pickledb.load('./data/data.db', True) 
 
-async def update_db(project_id, key, val):
-    project = db.get(project_id)
-    project[key] = val
-    db.set(project_id, project)
+async def update_db(project_name, key, val):
+    project = db.get(project_name)
+    project[key] = project.get(key, []) + val
 
 # Constants
 MODEL_NAME =  "gpt-4-0125-preview"  # config('MODEL_NAME')
@@ -205,7 +204,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     }
     """
     data = await request.form()
-    project_id = data.get("project_id")
+    project_name = data.get("project_name")
     customer_message = data.get("customer_message")
     # content = ""
     # secondary_knowledge = ""
@@ -217,12 +216,10 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
 
     # server_response = dict()
     server_response = ""
-    await update_global_state("project_id", project_id)
     old_chat = await get_global_state("OI_chat")
     chat = old_chat + [{"User":customer_message}]
     # parse chat for openai prompt
     openai_chat = json.dumps(chat)
-    await update_global_state("OI_chat",chat)
     funtion_response = ""
     coder_response = ""
     web_search_response = ""
@@ -241,15 +238,19 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             # old = await get_global_state("OI_history")
             # # await update_global_state("OI_history",old+function_response.get(func))
             # coder_response = server_response
+            update_db(project_name,"OI_history",function_response["coder"])
+            update_db(project_name,"OI_chat",function_response["coder"]["message"])
+            coder_response = function_response["coder"]
             print("coder_response ok")
         if('web_search' in functions):
             # old = await get_global_state("OI_chat")
             # old = old + [{"Assistant":server_response["message"]}]
             # await update_global_state("OI_chat",old)
             # web_search_response = server_response
+            web_search_response = function_response["web_search"]
             print("web_search_response ok")
         if('summary_text' in functions):
-            return {"message":res["function_response"]["summary_text"]}
+            return {"message":res["function_response"]["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
         break
 
 def add_chat_log(agent, response, chat_log=""):
@@ -292,11 +293,10 @@ async def chatGPT(customer_message,chat,coder_response,web_search_response):
             print(parameter)
             try:
                 if func == "coder":
-                    oichat = await get_global_state("OI_chat")
-                    oihistory = await get_global_state("OI_history")
                     query = parameter['query']
                     coder_response = (coder.code(query))
-                    function_response.update({"coder":coder_response})
+                    parsed = coder.parse_output(coder_response)
+                    function_response.update({"coder":parsed})
                 elif func == "web_search":
                     response = (web_search(parameter['query']))
                     function_response.update({"web_search":response})

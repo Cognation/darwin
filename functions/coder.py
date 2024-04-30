@@ -54,7 +54,7 @@ class Coder():
         output = "\n".join(parsed_output["output"])
         message = "\n".join(parsed_output["message"])
         prompt = """
-        Given the following Open Interpreter Response, summarise its initila plan, it actions and the conclusion in concise points.
+        Given the following Open Interpreter Response, summarise its initial plan, it actions and the conclusion in concise points.
         Code Output:
         """ + output + """
         Interpreter Code:

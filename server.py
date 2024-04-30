@@ -52,9 +52,10 @@ app.add_middleware(
 import pickledb
 db = pickledb.load('./data/data.db', True) 
 
-async def update_db(project_name, key, val):
+async def update_db(project_name, val):
     project = db.get(project_name)
-    project[key] = project.get(key, []) + val
+    project.append(val)
+    
 
 # Constants
 MODEL_NAME =  "gpt-4-0125-preview"  # config('MODEL_NAME')
@@ -161,9 +162,7 @@ async def create_project(request: Request):
     for key in db.getall():
         if key == project_name:
             return {"message": "Project already exists"}
-    db.set(project_name,{"OI_chat":[],"OI_history":[]})
-    await update_global_state("OI_chat", [])
-    await update_global_state("OI_history", [])
+    db.set(project_name,[])
     return {"project_name": project_name}
 
 @app.post("/get_project_data") # updates the global state with the project data
@@ -171,9 +170,8 @@ async def get_project(request: Request):
     data = await request.form()
     project_name = data.get("project_name")
     project = db.get(project_name)
-    await update_global_state("OI_chat", project["OI_chat"])
-    await update_global_state("OI_history", project["OI_history"])
-    return {"OI_chat": project["OI_chat"], "OI_history": project["OI_history"]}
+    print(project)
+    return project
 
 @app.delete("/delete_project") # deletes the project
 async def delete_project(request: Request):
@@ -224,7 +222,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     coder_response = ""
     web_search_response = ""
     while(True):
-        res = await chatGPT(customer_message,openai_chat,coder_response,web_search_response)
+        res = await chatGPT(customer_message,openai_chat,project_name)
         function_response = res.get("function_response")
         functions = res.get("functions")
         # chat = add_chat_log(func, function_response.get(func), chat)
@@ -238,8 +236,6 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             # old = await get_global_state("OI_history")
             # # await update_global_state("OI_history",old+function_response.get(func))
             # coder_response = server_response
-            update_db(project_name,"OI_history",function_response["coder"])
-            update_db(project_name,"OI_chat",function_response["coder"]["message"])
             coder_response = function_response["coder"]
             print("coder_response ok")
         if('web_search' in functions):
@@ -247,16 +243,17 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             # old = old + [{"Assistant":server_response["message"]}]
             # await update_global_state("OI_chat",old)
             # web_search_response = server_response
-            web_search_response = function_response["web_search"]
             print("web_search_response ok")
         if('summary_text' in functions):
-            return {"message":res["function_response"]["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
+            server_response = {"summary":res["function_response"]["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
+            await update_db(project_name,server_response)
+            return server_response
         break
 
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(customer_message,chat,coder_response,web_search_response):
+async def chatGPT(customer_message,chat,project_name):
     res ={
         "result":None,
         "function_response":None,
@@ -278,7 +275,7 @@ async def chatGPT(customer_message,chat,coder_response,web_search_response):
     result = gpt_response.choices[0].message.content
     print("\n\nResult: \n", result)
 
-    functions = extract_function_names(result)
+    functions = extract_function_names(result.strip())
     res["result"] = result    
 
     # print("\nChat: \n", chat)    
@@ -297,6 +294,7 @@ async def chatGPT(customer_message,chat,coder_response,web_search_response):
                     coder_response = (coder.code(query))
                     parsed = coder.parse_output(coder_response)
                     function_response.update({"coder":parsed})
+                    # function_response.update({"summary_text":coder.generate_summary(parsed)})
                 elif func == "web_search":
                     response = (web_search(parameter['query']))
                     function_response.update({"web_search":response})

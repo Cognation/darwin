@@ -14,7 +14,7 @@ def make_query(query, chat):
     return q
 
 class Coder():
-    def __init__(self):
+    def __init__(self, custom_instructions="Run all pip install commands as pip install -y [package_name]. It is compulsory to write end-to-end code and in code in separate code blocks"):
         import interpreter
         self.chat = []
         self.history = []
@@ -24,7 +24,7 @@ class Coder():
         self.interpreter.llm.model = "gpt-3.5-turbo"
         self.interpreter.llm.temperature = 0.7
         self.interpreter.auto_run = True
-        self.interpreter.custom_instructions = "Run all pip install commands as pip install -y [package_name]"
+        self.interpreter.custom_instructions = custom_instructions
     
     def make_query(self, query):
         q = "Based on the following context:\n" + json.dumps(self.chat) + "\n\nAnswer the following question:\n" + query
@@ -43,7 +43,7 @@ class Coder():
         response = {"code":[], "output":[], "message":[]} # code, console, message
         for message in messages:
             if message["type"] == "code":
-                response["code"].append(message["content"])
+                response["code"].append({"code":message["content"],"language":message["format"]})
             elif message["type"] == "console":
                 response["output"].append(message["content"])
             elif message["type"] == "message":
@@ -69,4 +69,4 @@ class Coder():
             ],
             temperature = 0.7
         )
-        return summary 
+        return summary["choices"][0]["message"]["content"]

@@ -14,7 +14,7 @@ def make_query(query, chat):
     return q
 
 class Coder():
-    def __init__(self, custom_instructions="Run all pip install commands as pip install -y [package_name]. It is compulsory to write end-to-end code and in code in separate code blocks"):
+    def __init__(self, project_name, custom_instructions="Run all pip install commands as pip install -y [package_name]. It is compulsory to write end-to-end code and in code in separate code blocks"):
         import interpreter
         self.chat = []
         self.history = []
@@ -24,7 +24,11 @@ class Coder():
         self.interpreter.llm.model = "gpt-3.5-turbo"
         self.interpreter.llm.temperature = 0.7
         self.interpreter.auto_run = True
-        self.interpreter.custom_instructions = custom_instructions
+        self.project_name = project_name
+        folder = os.path.join(os.getcwd(), "data")
+        self.path = os.path.join(folder, project_name)
+        self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
+        # self.interpreter.custom_instructions = f"Write all code in {self.path} in new files." + custom_instructions
     
     def make_query(self, query):
         q = "Based on the following context:\n" + json.dumps(self.chat) + "\n\nAnswer the following question:\n" + query
@@ -38,6 +42,7 @@ class Coder():
         q = make_query(query, self.chat)
         messages = self.interpreter.chat(q, stream=False, display=True)
         self.add_history(messages)
+        self.interpreter.chat(f"Write the code in the respective files in the {self.path} directory, in a new file")
         return messages
     def parse_output(self, messages):
         response = {"code":[], "output":[], "message":[]} # code, console, message

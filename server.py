@@ -143,16 +143,13 @@ async def folder_structure(request:Request):
     structure = get_folder_structure(root_dir)
     return structure
 
-app.get("/get_file")
+@app.get("/get_file")
 async def get_file(request: Request):
     data = await request.form()
-    file_name = data.get("file_name")
-    file_data = ""
-    pwd = os.getcwd()
-    path = os.path.join(pwd, file_name)
-    with open(path, 'rb') as file:
-        file_data = file.read()
-    return file_data
+    path = data["path"]
+    with open(path, "rb") as file:
+        file_bytes = file.read()
+    return file_bytes
 
 @app.post("/create_project") # creates a new project and updates the global state with the project data
 async def create_project(request: Request):
@@ -282,7 +279,7 @@ async def chatGPT(customer_message,chat,project_name):
     print("\nFunctions: \n", functions)
     res["functions"] = functions
     function_response = dict()
-    coder = Coder()
+    coder = Coder(project_name)
     if functions:
         parameters = extract_function_parameters(result)
         for func, parameter in zip(functions, parameters):

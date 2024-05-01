@@ -30,7 +30,7 @@ class Coder():
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
         self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
-        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code and in code in separate code blocks when asked"
+        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code and in code in separate code blocks."
         self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
     
     def make_query(self, query):
@@ -45,7 +45,7 @@ class Coder():
         q = make_query(query, self.chat)
         messages = self.interpreter.chat(q, stream=False, display=True)
         self.add_history(messages)
-        self.interpreter.chat(f"Write the code in the respective files in the {self.path} directory, in a new file")
+        self.interpreter.chat(f"Write the code in the respective files in the {self.path} directory, in a new file that does not already exist.")
         return messages
     def parse_output(self, messages):
         response = {"code":[], "output":[], "message":[]} # code, console, message

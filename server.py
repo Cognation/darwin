@@ -59,8 +59,8 @@ async def update_db(project_name, val):
     
 
 # Constants
-MODEL_NAME =  "gpt-4-0125-preview"  # config('MODEL_NAME')
-MAX_TOKENS = 1000
+MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
+MAX_TOKENS = 10000
 TEMPERATURE = 1.1
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
@@ -138,7 +138,7 @@ def get_folder_structure(dir_path,parent=""):
     return directory_object
 
 
-@app.get("/serve_file")
+@app.post("/serve_file")
 async def serve_file(request: Request):
     data = await request.form()
     filePath = data["path"]
@@ -147,7 +147,7 @@ async def serve_file(request: Request):
     path = os.path.join(pwd, filePath)
     return fastapi.responses.FileResponse(path)
 
-@app.get("/folder_structure")
+@app.post("/folder_structure")
 async def folder_structure(request:Request):
     data = await request.form()
     root_dir = data["root_dir"]
@@ -266,6 +266,7 @@ async def chatGPT(customer_message,chat,project_name):
         "result":None,
         "function_response":None,
         "functions":None,
+        "StateOfMind":None
     }
     prompt = process_assistant_data()
     message = [
@@ -280,10 +281,10 @@ async def chatGPT(customer_message,chat,project_name):
         temperature=TEMPERATURE,
     )
     print("\ngpt_response",gpt_response)
-    result = gpt_response.choices[0].message.content
+    result = gpt_response.choices[0].message.content.strip()
     print("\n\nResult: \n", result)
 
-    functions = extract_function_names(result.strip())
+    functions = extract_function_names(result)
     res["result"] = result    
 
     # print("\nChat: \n", chat)    
@@ -302,6 +303,8 @@ async def chatGPT(customer_message,chat,project_name):
                     coder_response = (coder.code(query))
                     parsed = coder.parse_output(coder_response)
                     function_response.update({"coder":parsed})
+                    res["StateOfMind"] = coder.generate_summary(parsed)
+                    print(res["StateOfMind"])
                     # function_response.update({"summary_text":coder.generate_summary(parsed)})
                 elif func == "web_search":
                     response = (web_search(parameter['query']))

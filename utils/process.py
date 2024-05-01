@@ -88,19 +88,40 @@ function_call_example = """
         "function_parameters": {
             "query": "what is bubble sort in python?"
         }
-    },
+    }
+]
+```
+
+```
+[
 
     {
         "function_name": "coder",
         "function_parameters": {
             "query": "write a python code for bubble sort algorithm."
-        },
-    },
+        }
+    }
+]
+```
 
+```
+[
     {
         "function_name": "summary_text",
         "function_parameters": {
             "message": "The bubble sort algorithm is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. I have written relevant code for the same..."
+        }
+    }
+]
+```
+
+```
+[
+    {
+        "function_name": "getIssueSummary",
+        "function_parameters": {
+            "repo": "shankerabhigyan/dsa-code",
+            "issue_number": "24"
         }
     }
 ]
@@ -140,6 +161,19 @@ functions = """
                 "description": "message to send to the user. Should contain a summary of the function response."
             }
         }
+    },
+
+    {
+        "function_name": "getIssueSummary",
+        "description": "Get the summary of the issue from the github repository",
+        "parameters" : {
+            "repo": {
+                "description": "The repository name from which the issue is to be fetched eg. shankerabhigyan/dsa-code"
+            },
+            "issue_number": {
+                "description": "The issue number to be fetched eg. 24"
+            }
+        }
     }
 ]
 ```
@@ -147,24 +181,25 @@ functions = """
 
 
 
-def process_assistant_data():
+def process_assistant_data(StateOfMind="Starting out"):
 
         
     #if(user_function):
     #    custom_functions+=user_function
             
     system_prompt = f"""
-        You are Darwin, an AI Software Engineer Intern, Your job is to assist the user in their queries.
-        You have a simple job to design a workflow in the form of a list of function calls with no longer than 3 functions in the list.
-        The list should always have one occurence of the function summary_text and that too at the end. This should contain your final response to the user after reviewing the output of the other functions.
-        An example of a function call having 3 functions is given below:
+        You are an AI Software Engineer Intern, Your job is to assist the user in their queries.
+        You have a simple task of assisting the user in their queries. You can help the user with the following functions:
+        {functions}
+        Based upon your State Of Mind : {StateOfMind}, you will decide which function to call.
+        You can only call one function at a time, based on which your StateOfMind will be updated, reflecting the summary result of the function call.
+        When you are satisfied with the StateOfMind, you can call the summary_text function to send a message to the user and conclude your work.
 
-        EXAMPLE FUNCTION CALL
-        %%%%%%
+        FUNCTION CALL EXAMPLES:
         {function_call_example}
-        %%%%%%
 
-        FOLLOW ALL INSTRUCTIONS CAREFULLY.
+        Keep all functions within ``` ```.
+        Follow the above instructions precisely to get a bonus. Else you will be penalized.
         """
     return system_prompt
 

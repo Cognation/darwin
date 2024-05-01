@@ -2,6 +2,8 @@ import subprocess
 import openai
 import os
 from dotenv import load_dotenv
+import re
+import json
 
 load_dotenv()
 
@@ -15,13 +17,39 @@ class issueHelper():
         ]
         self.openai = openai.OpenAI(api_key=self.openai_api_key)
 
-    def getIssue(self,repo,issue_number):
+    def parse_response(self, response):
+        response = response.strip()
+        return json.loads(response)
+
+    def getIssue(self,statement):
         # gh issue --repo {repo} view {issue_number}
+        prompt = """You are a helpful AI assistant, who can read and identify github repository and issue number from the user's statement or link,
+        and return them parsed perectly as a clean JSON object.
+        {
+            "repo": "shankerabhigyan/dsa-code",
+            "issue_number": "1"
+        }
+        """
+        message = [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": statement}
+        ]
+        response = self.openai.chat.completions.create(
+            model = "gpt-4-turbo",
+            messages = message,
+            temperature=0.5
+        )
+        response = response.choices[0].message.content
+        response_json = self.parse_response(response)
+
+        repo = response_json["repo"]
+        issue_number = response_json["issue_number"]
+
         self.issue = subprocess.run(["gh", "issue", "--repo", repo, "view", str(issue_number)],capture_output=True)
         self.issue = self.issue.stdout.decode("utf-8")        
     
-    def getIssueSummary(self,repo,issue_number):
-        self.getIssue(repo,issue_number)
+    def getIssueSummary(self,statement): # make param a statement in natural language
+        self.getIssue(statement)
         self.message.append({"role":"user","content":self.issue})
         self.issue_summary = self.openai.chat.completions.create(
             model = "gpt-4-turbo",
@@ -33,5 +61,9 @@ class issueHelper():
 
 if __name__ == "__main__":
     helper = issueHelper("first")
-    response = helper.getIssueSummary("shankerabhigyan/dsa-code","1")
+    # response = helper.getIssueSummary("Whats the issue here https://github.com/shankerabhigyan/dsa-code/issues/1")
+    #response = helper.getIssueSummary("Whats the issue here https://github.com/EleutherAI/gpt-neox/issues/1204 can you help?")
+    
+    response = helper.getIssueSummary("Can you tell me more about the issue number 1167 from the repo gpt-neox from EleutherAI?")
+
     print(response)

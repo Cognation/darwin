@@ -49,7 +49,7 @@ def extract_function_parameters(text):
 
 def extract_iter(text):
     # Find JSON content within the text using regular expressions
-    json_pattern = r'```(?:json)?(.*?)```'
+    json_pattern = r'```(?:[^`]|`[^`]|``[^`])*```'
     matches = re.findall(json_pattern, text, re.DOTALL)
 
     ITER = False

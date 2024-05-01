@@ -229,46 +229,38 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     funtion_response = ""
     coder_response = ""
     web_search_response = ""
+    StateOfMind = "Starting Out"
     while(True):
-        res = await chatGPT(customer_message,openai_chat,project_name)
+        res = await chatGPT(customer_message,openai_chat,project_name,StateOfMind)
         function_response = res.get("function_response")
         functions = res.get("functions")
         # chat = add_chat_log(func, function_response.get(func), chat)
         # server_response = function_response.get(functions)
         if('coder' in functions):
-            # for obj in server_response:
-            #     if obj["role"]=="assistant" and obj["type"]=="message":
-            #         old = await get_global_state("OI_chat")
-            #         old = old + [{"Assistant":obj["content"]}]
-            #         await update_global_state("OI_chat",old)     
-            # old = await get_global_state("OI_history")
-            # # await update_global_state("OI_history",old+function_response.get(func))
-            # coder_response = server_response
             coder_response = function_response["coder"]
+            StateOfMind = res["StateOfMind"]
+            print("StateOfMind", StateOfMind)
             print("coder_response ok")
         if('web_search' in functions):
-            # old = await get_global_state("OI_chat")
-            # old = old + [{"Assistant":server_response["message"]}]
-            # await update_global_state("OI_chat",old)
-            # web_search_response = server_response
+            web_search_response = function_response["web_search"]
+            StateOfMind = res["StateOfMind"]
             print("web_search_response ok")
         if('summary_text' in functions):
             server_response = {"summary":res["function_response"]["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
             await update_db(project_name,server_response)
             return server_response
-        break
 
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(customer_message,chat,project_name):
+async def chatGPT(customer_message,chat,project_name,StateOfMind):
     res ={
         "result":None,
         "function_response":None,
         "functions":None,
         "StateOfMind":None
     }
-    prompt = process_assistant_data()
+    prompt = process_assistant_data(StateOfMind)
     message = [
         {"role": "system", "content": prompt},
         {"role": "assistant", "content":chat},
@@ -304,11 +296,11 @@ async def chatGPT(customer_message,chat,project_name):
                     parsed = coder.parse_output(coder_response)
                     function_response.update({"coder":parsed})
                     res["StateOfMind"] = coder.generate_summary(parsed)
-                    print(res["StateOfMind"])
                     # function_response.update({"summary_text":coder.generate_summary(parsed)})
                 elif func == "web_search":
                     response = (web_search(parameter['query']))
                     function_response.update({"web_search":response})
+                    res["StateOfMind"] = "Browsed the web and retrieved relevant information."
                 elif func == "summary_text":
                     response = (parameter['message'])
                     function_response.update({"summary_text":response})

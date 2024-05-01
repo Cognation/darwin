@@ -30,7 +30,7 @@ class Coder():
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
         self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
-        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code and in code in separate code blocks."
+        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code and in proper separate code blocks. Use with open() to read and write files"
         self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
     
     def make_query(self, query):
@@ -62,7 +62,7 @@ class Coder():
         output = "\n".join(parsed_output["output"])
         message = "\n".join(parsed_output["message"])
         prompt = """
-        Given the following Open Interpreter Response, summarise its initial plan, it actions and the conclusion in concise points.
+        Given the following Open Interpreter Response, summarise its initial plan, the actions taken and the conclusion in concise points.
         Code Output:
         """ + output + """
         Interpreter Code:
@@ -77,4 +77,4 @@ class Coder():
             ],
             temperature = 0.7
         )
-        return summary["choices"][0]["message"]["content"]
+        return summary.choices[0].message.content

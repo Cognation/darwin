@@ -136,6 +136,12 @@ def get_folder_structure(dir_path,parent=""):
 
     return directory_object
 
+from flask import Flask, send_from_directory
+@app.route('/files_data/<path:filename>')
+def serve_static(filename):
+    root_dir = os.path.dirname(os.getcwd())
+    return send_from_directory(os.path.join(root_dir, 'files_data'), filename)
+
 @app.get("/folder_structure")
 async def folder_structure(request:Request):
     data = await request.form()

@@ -14,21 +14,24 @@ def make_query(query, chat):
     return q
 
 class Coder():
-    def __init__(self, project_name, custom_instructions="Run all pip install commands as pip install -y [package_name]. It is compulsory to write end-to-end code and in code in separate code blocks"):
+    def __init__(self, project_name, custom_instructions=""):
         import interpreter
         self.chat = []
         self.history = []
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.interpreter = interpreter.interpreter
         self.interpreter.llm.api_key = self.openai_api_key
-        self.interpreter.llm.model = "gpt-3.5-turbo"
-        self.interpreter.llm.temperature = 0.7
+        self.interpreter.llm.model = "gpt-4-turbo"
+        self.interpreter.llm.temperature = 1.1
         self.interpreter.auto_run = True
+        self.interpreter.llm.context_window = 10000
+        self.interpreter.llm.max_tokens = 1000
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
         self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
-        # self.interpreter.custom_instructions = f"Write all code in {self.path} in new files." + custom_instructions
+        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code and in code in separate code blocks when asked"
+        self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
     
     def make_query(self, query):
         q = "Based on the following context:\n" + json.dumps(self.chat) + "\n\nAnswer the following question:\n" + query

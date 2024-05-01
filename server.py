@@ -6,6 +6,7 @@ import ast
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
+import fastapi
 from decouple import config
 from gridfs import GridFS
 from PIL import Image
@@ -136,11 +137,15 @@ def get_folder_structure(dir_path,parent=""):
 
     return directory_object
 
-from flask import Flask, send_from_directory
-@app.route('/files_data/<path:filename>')
-def serve_static(filename):
-    root_dir = os.path.dirname(os.getcwd())
-    return send_from_directory(os.path.join(root_dir, 'data'), filename)
+
+@app.get("/serve_file")
+async def serve_file(request: Request):
+    data = await request.form()
+    filePath = data["path"]
+    # serve file using fastapi FileResponse
+    pwd = os.path.join(os.getcwd(), 'data')
+    path = os.path.join(pwd, filePath)
+    return fastapi.responses.FileResponse(path)
 
 @app.get("/folder_structure")
 async def folder_structure(request:Request):

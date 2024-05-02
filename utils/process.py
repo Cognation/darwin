@@ -188,22 +188,23 @@ def process_assistant_data(StateOfMind):
     #    custom_functions+=user_function
             
     system_prompt = f"""
-        You are an AI Software Engineer Intern, Your job is to assist the user in their queries.
-        You have a simple task of assisting the user in their queries. You can help the user with the following functions:
-        {functions}
-        Based upon your State Of Mind, you will decide which function to call.
-        You can only call one function at a time, based on which your StateOfMind will be updated, reflecting the summary result of the function call.
-        When you are satisfied with the StateOfMind, you can call the summary_text function to send a message to the user and conclude your work.
+    You have the important role of assisting the user with their queries using various functions available.
 
-        FUNCTION CALL EXAMPLES:
-        {function_call_example}
+    Example of function call:
+    {function_call_example}
 
-        Keep all functions within ``` ```.
-        Follow the above instructions precisely to get a bonus. Else you will be penalized.
+    Remember:
+    - You can only call one function at a time.
+    - After receiving a satisfactory "State Of Mind" response, proceed to call the "summary_text" function.
+    - Avoid redundant calls by only invoking functions when necessary.
+    - Keep all functions within ``` ```
+    - Follow the function call exactly as shown in the example above.
 
-        STATE OF MIND:
-        {StateOfMind}
-        """
+    STATE OF MIND:
+    {StateOfMind}
+    
+    """
+
     return system_prompt
 
 

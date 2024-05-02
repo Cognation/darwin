@@ -53,9 +53,10 @@ app.add_middleware(
 import pickledb
 db = pickledb.load('./data/data.db', True) 
 
-async def update_db(project_name, val):
+def update_db(project_name, val):
     project = db.get(project_name)
     project.append(val)
+    db.dump()
     
 
 # Constants
@@ -229,31 +230,31 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     funtion_response = ""
     coder_response = ""
     web_search_response = ""
-    StateOfMind = "Starting Out"
+    StateOfMind = customer_message
     while(True):
-        res = await chatGPT(customer_message,openai_chat,project_name,StateOfMind)
+        res = await chatGPT(openai_chat,project_name,StateOfMind)
         function_response = res.get("function_response")
         functions = res.get("functions")
         # chat = add_chat_log(func, function_response.get(func), chat)
         # server_response = function_response.get(functions)
         if('coder' in functions):
             coder_response = function_response["coder"]
-            StateOfMind = res["StateOfMind"]
+            StateOfMind = "Coder Response : " + res["StateOfMind"]
             print("StateOfMind", StateOfMind)
             print("coder_response ok")
         if('web_search' in functions):
             web_search_response = function_response["web_search"]
-            StateOfMind = res["StateOfMind"]
+            StateOfMind = "Web Search Response" + res["StateOfMind"]
             print("web_search_response ok")
         if('summary_text' in functions):
-            server_response = {"summary":res["function_response"]["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
-            await update_db(project_name,server_response)
+            server_response = {"summary":StateOfMind, "coder_response":coder_response, "web_search_response":web_search_response}
+            update_db(project_name,server_response)
             return server_response
 
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(customer_message,chat,project_name,StateOfMind):
+async def chatGPT(chat,project_name,StateOfMind):
     res ={
         "result":None,
         "function_response":None,
@@ -262,9 +263,7 @@ async def chatGPT(customer_message,chat,project_name,StateOfMind):
     }
     prompt = process_assistant_data(StateOfMind)
     message = [
-        {"role": "system", "content": prompt},
-        {"role": "assistant", "content":chat},
-        {"role": "user", "content": customer_message},
+        {"role": "user", "content": prompt}
     ]
     print("\nMessage to GPT: \n", prompt)
     gpt_response = openai.chat.completions.create(

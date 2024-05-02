@@ -7,7 +7,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 os.environ["OPENAI_API_KEY"] = openai_api_key
 
 from openai import OpenAI
-openai = OpenAI(api_key=openai_api_key)
+
 
 def make_query(query, chat):
     q = "Based on the following context:\n" + json.dumps(chat) + "\n\nAnswer the following question:\n" + query
@@ -19,6 +19,7 @@ class Coder():
         self.chat = []
         self.history = []
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.openai = OpenAI(api_key=openai_api_key)
         self.interpreter = interpreter.interpreter
         self.interpreter.llm.api_key = self.openai_api_key
         self.interpreter.llm.model = "gpt-4-turbo"
@@ -30,7 +31,7 @@ class Coder():
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
         self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
-        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code and in proper separate code blocks. Use with open() to read and write files"
+        ci = "Run all pip install commands as pip install -y [package_name]."
         self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
     
     def make_query(self, query):
@@ -45,7 +46,7 @@ class Coder():
         q = make_query(query, self.chat)
         messages = self.interpreter.chat(q, stream=False, display=True)
         self.add_history(messages)
-        self.interpreter.chat(f"Write the code in the respective files in the {self.path} directory, in a new file that does not already exist.")
+        self.interpreter.chat(f"Write this code in a new file that does not already exist files in the {self.path} directory. Use proper formatting and no '\n's")
         return messages
     def parse_output(self, messages):
         response = {"code":[], "output":[], "message":[]} # code, console, message
@@ -58,19 +59,19 @@ class Coder():
                 response["message"].append(message["content"])
         return response
     def generate_summary(self, parsed_output):
-        code = "\n".join(parsed_output["code"])
-        output = "\n".join(parsed_output["output"])
-        message = "\n".join(parsed_output["message"])
-        prompt = """
+        code = parsed_output["code"]
+        output = parsed_output["output"]
+        message = parsed_output["message"]
+        prompt = f"""
         Given the following Open Interpreter Response, summarise its initial plan, the actions taken and the conclusion in concise points.
         Code Output:
-        """ + output + """
+        {output}
         Interpreter Code:
-        """ + code + """
+        {code}
         Interpreter Message:
-        """ + message + """ 
+        {message}
         """
-        summary = openai.chat.completions.create(
+        summary = self.openai.chat.completions.create(
             model = "gpt-3.5-turbo",
             messages = [
                 {"role": "system", "content": prompt}
@@ -78,3 +79,14 @@ class Coder():
             temperature = 0.7
         )
         return summary.choices[0].message.content
+    
+if __name__ == "__main__":
+    c = Coder("1")
+    sample_message = {
+        {"role": "assistant", "type": "code", "format": "python", "start": True},
+        {"role": "assistant", "type": "code", "format": "python", "content": "34"},
+        {"role": "assistant", "type": "code", "format": "python", "content": " /"},
+        {"role": "assistant", "type": "code", "format": "python", "content": " "},
+        {"role": "assistant", "type": "code", "format": "python", "content": "24"},
+        {"role": "assistant", "type": "code", "format": "python", "end": True}
+    }

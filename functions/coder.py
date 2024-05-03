@@ -26,7 +26,7 @@ class Coder():
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
         self.interpreter.llm.context_window = 10000
-        self.interpreter.llm.max_tokens = 5000
+        self.interpreter.llm.max_tokens = 4096
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)

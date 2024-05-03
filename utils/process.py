@@ -162,7 +162,7 @@ def process_assistant_data(original_query,StateOfMind):
     - You can only call one function at a time.
     - After receiving a satisfactory "State Of Mind" response, proceed to call the "summary_text" function.
     - Avoid redundant calls by only invoking functions when necessary.
-    - Keep all functions within ``` ```
+    - Keep all functions within ```[ ]```
     - Follow the function call exactly as shown in the example above.
 
     Original Query:

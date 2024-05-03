@@ -7,7 +7,7 @@ function Setting() {
 
   const { theme, setTheme } = useZustandStore();
 
-  const [th , setth] = useState("System");
+  const [th, setth] = useState(theme);
 
   useEffect(() => {
     console.log(theme);
@@ -24,13 +24,32 @@ function Setting() {
   };
 
   return (
-    <div className={`${styles.setting} ${theme==="Dark" ? styles.darkmode : null} `}>
+    <div
+      className={`${styles.setting} ${
+        theme === "Dark" ? styles.darkmode : null
+      } `}
+    >
       <div className={styles.themeSelector}>
         <div className={`${styles.text} `}>Mode : </div>
-        <div className={`${styles.dropdown} ${theme==="Dark" ? styles.darkmode_dropdown : null}`} onClick={toggleDropdown}>
-          <div className={`${styles.selectedTheme} ${theme==="Dark" ? styles.textmode : null}`}>{th}</div>
-          {isOpen ? (
-            <div className={`${styles.dropdownContent} ${theme==="Dark" ? styles.darkmode :null}`}>
+        <div
+          className={`${styles.dropdown} ${
+            theme === "Dark" ? styles.darkmode_dropdown : null
+          }`}
+          onClick={toggleDropdown}
+        >
+          <div
+            className={`${styles.selectedTheme} ${
+              theme === "Dark" ? styles.textmode : null
+            }`}
+          >
+            {th}
+          </div>
+          {isOpen || !isOpen ? (
+            <div
+              className={`${styles.dropdownContent} ${
+                theme === "Dark" ? styles.darkmode : null
+              }`}
+            >
               <div
                 className={styles.option}
                 onClick={() => handleThemeChange("Dark")}

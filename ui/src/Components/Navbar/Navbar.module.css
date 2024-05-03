@@ -13,8 +13,20 @@
     backdrop-filter: blur(10px);
     z-index: 100;
     flex-wrap: auto;
+    padding-top: 10px;
     /* background-color: rgb(232, 232, 232 , 10); */
 }
+
+.darkmode{
+    color: white;
+    background-color: black;
+}
+.projectmode{
+    color: white;
+    background-color: black;
+    border-radius: 0px;
+}
+
 .ul{
     display: flex;
     list-style: none; 
@@ -293,7 +305,7 @@
 
     .dropdown {
         min-width: 200px;
-        margin-left: 3%;
+        margin-left: 4%;
         position: relative;
         display: inline-block;
         font-family: Arial, sans-serif;
@@ -309,10 +321,6 @@
         justify-content: space-between;
       }
       
-      .selectedOption:hover {
-        background-color: #f0f0f0;
-      }
-      
       .options {
         position: absolute;
         top: 105%;
@@ -326,17 +334,15 @@
         padding: 0;
         margin: 0;
         width: 100%;
+        overflow: hidden;
       }
       
       .options li {
         padding: 10px;
         cursor: pointer;
-        border-radius: 5px 5px 5px 5px;
       }
-      
       .options li:hover {
-        background-color: #f0f0f0;
-        border-radius: 5px 5px 5px 5px;
+        background-color: rgb(50, 50, 50);
       }
       
       .internet{
@@ -348,22 +354,22 @@
         padding: 10px;
         border-radius: 5px;
         margin-right: 3%;
-        min-width: 100px;
+        min-width: 80px;
       }
 
       .dot{
-        min-width: 20px;
+        min-width: 10px;
       }
 
       .greendot{
-        border-radius: 50%;
-        min-width: 20px;
-        height: 20px;
+        border-radius: 100%;
+        width: 10px;
+        height: 10px;
         background-color: green;
       }
       .reddot{
-        border-radius: 50%;
-        min-width: 20px;
-        height: 20px;
+        border-radius: 100%;
+        width: 10px;
+        height: 10px;
         background-color: red;
       }

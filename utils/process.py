@@ -163,9 +163,7 @@ def process_assistant_data(original_query,StateOfMind):
     - Avoid redundant calls by only invoking functions when necessary.
     - Keep all functions within ```[ ]```
     - Follow the function call exactly as shown in the example above.
-
-    Original Query:
-    {original_query}
+    - You can only communicate with the user through the functions provided.
 
     STATE OF MIND:
     {StateOfMind}

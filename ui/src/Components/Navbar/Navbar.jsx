@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import css from "./Navbar.module.css";
 import { useZustandStore } from "../../store";
 import styles from "./Navbar.module.css";
+import { fetch_projects } from "../../api/getprojects";
+import { getprojectData } from "../../api/getprojectData";
 
 function Navbar() {
   const {
@@ -13,27 +15,26 @@ function Navbar() {
     setselectedProject_id,
     messages,
     setMessages,
+    theme,
+    setFiles
   } = useZustandStore();
+
+  useEffect(() => {
+    setFiles([]);
+  }, [selectedProject]);
 
   useEffect(() => {
     getprojects();
   }, []);
 
+  useEffect(() => {
+    console.log("project List : ", projectList);
+  }, [projectList]);
+
   const getprojects = async () => {
     try {
-      const projects = await fetch(
-        `${process.env.REACT_APP_BACKEND}/get_project_ids`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            type: "formData",
-          },
-        }
-      );
-
-      const data = JSON.parse(await projects.text());
-      // console.log("Projects : ", data);
+      const data = await fetch_projects();
+      console.log("Projectsss : ", data);
 
       setprojectlist(data);
     } catch (err) {
@@ -48,33 +49,38 @@ function Navbar() {
     try {
       setIsOpen(false);
       if (isnew) setisnew(false);
-      setselectedProject(project.project_name);
-      setselectedProject_id(project.project_id);
+      setselectedProject(project);
 
-      const formData = new FormData();
-      formData.append("project_id", project.project_id);
+      // const formData = new FormData();
+      // formData.append("project_name", project);
 
-      const chat = await fetch(
-        `${process.env.REACT_APP_BACKEND}/get_project_data`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            type: "formData",
-          },
-          body: formData,
-        }
-      );
+      // const chat = await fetch(
+      //   `${process.env.REACT_APP_BACKEND}/get_project_data`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       Accept: "application/json",
+      //       type: "formData",
+      //     },
+      //     body: formData,
+      //   }
+      // );
 
-      const data = JSON.parse(await chat.text());
+      // const data = JSON.parse(await chat.text());
+      const data = await getprojectData(project);
       // console.log("Chat History : " , data.OI_chat);
-      const chat_history = data.OI_chat;
+      const chat_history = data;
       let msgs = [];
 
       for (const item of chat_history) {
+        console.log("Item : " , item);
         msgs.push({
-          text: item?.User ? item?.User : item?.Assistant,
-          sender: item?.User ? "user" : "bot",
+          text: item?.user_query,
+          sender: "user",
+        });
+        msgs.push({
+          text: item?.summary,
+          sender: "bot",
         });
       }
       setMessages(msgs);
@@ -117,7 +123,6 @@ function Navbar() {
       // console.log("Create project res : ", data.project_name);
 
       setselectedProject(data.project_name);
-      setselectedProject_id(data.project_id);
       getprojects();
       setMessages([]);
     } catch (err) {
@@ -127,27 +132,34 @@ function Navbar() {
 
   return (
     <>
-      <div className={css.navbar}>
+      <div
+        className={`${css.navbar} ${theme === "Dark" ? styles.darkmode : null}`}
+      >
         <div
-          className={styles.dropdown}
-          onClick={() => {
-            setIsOpen(true);
-          }}
+          className={`${styles.dropdown} ${
+            theme === "Dark" ? styles.projectmode : null
+          }`}
         >
           <div
-            className={styles.selectedOption}
+            className={`${styles.selectedOption} ${
+              theme === "Dark" ? styles.projectmode : null
+            }`}
             onClick={() => setIsOpen(!isOpen)}
           >
             {selectedProject ? selectedProject : "Select Project"}
           </div>
           {isOpen && (
             <ul
-              className={styles.options}
+              className={`${styles.options} ${
+                theme === "Dark" ? styles.projectmode : null
+              }`}
               onMouseLeave={() => (isOpen && !isnew ? setIsOpen(false) : null)}
             >
               {!isnew ? (
                 <li
-                  className={styles.createNew}
+                  className={`${styles.createNew} ${
+                    theme === "Dark" ? styles.projectmode : null
+                  }`}
                   onClick={() => {
                     setisnew(true);
                   }}
@@ -155,7 +167,11 @@ function Navbar() {
                   Create New Project
                 </li>
               ) : (
-                <li className={styles.createNew}>
+                <li
+                  className={`${styles.createNew} ${
+                    theme === "Dark" ? styles.projectmode : null
+                  }`}
+                >
                   <input
                     style={{
                       border: "none",
@@ -163,6 +179,9 @@ function Navbar() {
                       background: "none",
                       outline: "none",
                     }}
+                    className={`${styles.input} ${
+                      theme === "Dark" ? styles.projectmode : null
+                    }`}
                     ref={newprojectref}
                     type="text"
                     placeholder="Porject Name"
@@ -177,11 +196,19 @@ function Navbar() {
                   />
                 </li>
               )}
-              {projectList && projectList.length>0 && projectList.map((project, index) => (
-                <li key={index} onClick={() => handleSelectProject(project)}>
-                  {project.project_name}
-                </li>
-              ))}
+              {projectList &&
+                projectList.length > 0 &&
+                projectList.map((project, index) => (
+                  <li
+                    key={index}
+                    className={`${
+                      theme === "Dark" ? styles.projectmode : null
+                    }`}
+                    onClick={() => handleSelectProject(project)}
+                  >
+                    {project}
+                  </li>
+                ))}
             </ul>
           )}
         </div>
@@ -194,7 +221,7 @@ function Navbar() {
               <div className={styles.reddot}></div>
             )}
           </div>
-          Internet
+          <div className={styles.text}>Internet</div>
         </div>
       </div>
     </>

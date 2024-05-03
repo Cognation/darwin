@@ -70,7 +70,7 @@ def get_db(project_name):
 # Constants
 MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
 MAX_TOKENS = 10000
-TEMPERATURE = 0
+TEMPERATURE = 1.1
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):
@@ -317,7 +317,7 @@ async def chatGPT(chat,project_name,original_query,StateOfMind):
                 if func == "coder":
                     query = parameter['query']
                     coder = Coder(project_name)
-                    coder_response = (coder.code(query,web_search_response))
+                    coder_response = coder.code(query,web_search_response)
                     parsed = coder.parse_output(coder_response)
                     function_response.update({"coder":parsed})
                     res["StateOfMind"] = coder.generate_summary(parsed)

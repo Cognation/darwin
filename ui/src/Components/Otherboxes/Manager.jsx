@@ -10,18 +10,18 @@ import Editor from "@monaco-editor/react";
 import FileEx from "../FileExplorer/FileExplorer";
 import Planner from "../Planner/Planner";
 
-function Manager({ colorMode, lineData , plan}) {
-  const [editor_width, seteditor_width] = useState(false);
-  const [selected_file, setselected_file] = useState(null);
-  const [selected_file_language, setselected_file_language] = useState(
-    selected_file?.language || "python"
-  );
-
-  useEffect(()=>{
-    console.log("Editor width : " , editor_width);
-  } , [editor_width])
-
-  const { messages, selected, setselected, files, theme , editor_expanded , setEditor_expanded} = useZustandStore();
+function Manager({ colorMode, lineData, plan }) {
+  const {
+    selected,
+    setselected,
+    files,
+    editor_expanded,
+    setEditor_expanded,
+    setselected_file,
+    selected_file,
+    selected_file_language,
+    setselected_file_language,
+  } = useZustandStore();
 
   const yellowBtnClick = () => {
     // console.log("Clicked the yellow button.");
@@ -53,6 +53,10 @@ function Manager({ colorMode, lineData , plan}) {
       setselected_file_language("javascript");
     } else if (file?.language === "py") {
       setselected_file_language("python");
+    }else if (file?.language === "cpp") {
+      setselected_file_language("cpp");
+    }else if (file?.language === "c") {
+      setselected_file_language("c");
     } else {
       setselected_file_language(file?.language);
     }
@@ -167,11 +171,11 @@ function Manager({ colorMode, lineData , plan}) {
                     <>
                       <div
                         key={index}
-                        className={
-                          file === selected_file
+                        className={`${
+                          selected_file?.code === file?.code
                             ? styles.code_selected
                             : styles.file_button
-                        }
+                        }`}
                         onClick={() => handleFileChange(file)}
                       >
                         {file?.filename}
@@ -187,9 +191,7 @@ function Manager({ colorMode, lineData , plan}) {
                 width="100%"
                 theme="vs-dark"
                 language={selected_file_language || "python"}
-                value={
-                  selected_file?.code
-                }
+                value={selected_file?.code}
                 onChange={(code) => setcode(code)}
                 options={{
                   inlineSuggest: true,
@@ -206,7 +208,7 @@ function Manager({ colorMode, lineData , plan}) {
 
         {selected === "file_explorer" ? <FileEx /> : null}
 
-        {selected === "planner" ? <Planner plan={plan}/> : null}
+        {selected === "planner" ? <Planner plan={plan} /> : null}
       </div>
     </div>
   );

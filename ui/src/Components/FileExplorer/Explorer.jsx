@@ -1,7 +1,6 @@
 // FileExplorer.js
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styles from "./Explorer.module.css";
-import axios from "axios";
 import { useZustandStore } from "../../store";
 
 const FileExplorer = ({ data }) => {
@@ -14,6 +13,8 @@ const FileExplorer = ({ data }) => {
     setExpandedNodes,
     theme,
     selectedProject,
+    setselected_file,
+    selected_file,
   } = useZustandStore();
 
   function extractExtension(filename) {
@@ -32,30 +33,35 @@ const FileExplorer = ({ data }) => {
   }
 
   const toggleNode = (path) => {
-    console.log("Path : ", path);
     const newexpanded = expandedNodes;
     newexpanded[path] = !expandedNodes[path];
     setExpandedNodes(newexpanded);
-    console.log(expandedNodes);
   };
 
   const fetch_file_content = async (path, name) => {
     try {
       const isFilePresent = files.some((file) => file.filename === name);
 
-      if (isFilePresent) return;
+      if (isFilePresent) {
+        const selectedFile = files.find((file) => file.filename === name);
+        setselected_file(selectedFile);
+        return;
+      }
 
       const formData = new FormData();
       formData.append("path", path);
 
-      const file_res = await fetch(`${process.env.REACT_APP_BACKEND}/serve_file`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          type: "formData",
-        },
-        body: formData,
-      });
+      const file_res = await fetch(
+        `${process.env.REACT_APP_BACKEND}/serve_file`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            type: "formData",
+          },
+          body: formData,
+        }
+      );
 
       const data = await file_res.text();
 
@@ -68,6 +74,11 @@ const FileExplorer = ({ data }) => {
       });
 
       setFiles(newfile);
+      setselected_file({
+        filename: name,
+        language: extractExtension(name),
+        code: extractExtension(name) === "json" ? JSON.stringify(data) : data,
+      });
     } catch (err) {
       console.error(err);
     }
@@ -89,7 +100,13 @@ const FileExplorer = ({ data }) => {
         <div
           className={`${styles.name} ${
             theme === "Dark" ? styles.textmode : null
-          } ${node.type === "directory" ? styles.directory : styles.file}`}
+          } ${
+            node.type === "directory"
+              ? styles.directory
+              : theme === "Dark"
+              ? styles.filedark
+              : styles.file
+          }`}
           onClick={() =>
             hasChildren
               ? toggleNode(fullPath)
@@ -120,8 +137,11 @@ const FileExplorer = ({ data }) => {
         theme === "Dark" ? styles.textmode : null
       }`}
     >
-      {selectedProject ? <div className={styles.tree}>{renderNode(data)}</div>
-      : <div>Please select an project.</div>}
+      {selectedProject ? (
+        <div className={styles.tree}>{renderNode(data)}</div>
+      ) : (
+        <div>Please select an project.</div>
+      )}
     </div>
   );
 };

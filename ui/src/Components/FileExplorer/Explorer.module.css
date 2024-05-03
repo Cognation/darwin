@@ -37,8 +37,24 @@
   }
   
   .file {
-    color: #6c757d;
+    color: #4a4d50;
     font-size: 18px;
+    pointer-events: auto;
+  }
+  
+  .file:hover {
+    color: rgb(8, 8, 8);
+    pointer-events: auto;
+  }
+  
+  .filedark {
+    color: #d0d0d0;
+    font-size: 18px;
+    pointer-events: auto;
+  }
+  
+  .filedark:hover {
+    color: rgb(135, 135, 135);
     pointer-events: auto;
   }
   

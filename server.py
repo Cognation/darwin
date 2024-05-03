@@ -21,6 +21,7 @@ from functions.coder import *
 from functions.web_api import *
 from functions.call_function import function_dict
 from functions.extract_web_links import extract_links, scrape_pdf
+from functions.issues import issueHelper
 
 
 # Initialize FastAPI app
@@ -58,6 +59,9 @@ def update_db(project_name, val):
     project.append(val)
     db.dump()
     
+def get_db(project_name):
+    project = db.get(project_name)
+    return project
 
 # Constants
 MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
@@ -231,6 +235,8 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     coder_response = ""
     web_search_response = ""
     StateOfMind = customer_message
+    global history
+    history = get_db(project_name)
     while(True):
         res = await chatGPT(openai_chat,project_name,StateOfMind)
         function_response = res.get("function_response")
@@ -246,15 +252,26 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             web_search_response = function_response["web_search"]
             StateOfMind = "Web Search Response" + res["StateOfMind"]
             print("web_search_response ok")
+        if('getIssueSummary' in functions):
+            StateOfMind = "I have extracted the Issue details as follows : " + function_response["getIssueSummary"] + "\n"
+            print("getIssueSummary ok")
         if('summary_text' in functions):
-            server_response = {"summary":StateOfMind, "coder_response":coder_response, "web_search_response":web_search_response}
+            server_response = {"user_query":customer_message,"summary":StateOfMind, "coder_response":coder_response, "web_search_response":web_search_response}
             update_db(project_name,server_response)
+            history.append(server_response)
             return server_response
 
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
 async def chatGPT(chat,project_name,StateOfMind):
+    global history
+    history_string = ""
+    for obj in history:
+        history_string += f"User: {obj['user_query']}\n" if obj['user_query'] else ""
+        history_string += f"AI: {obj['summary']}\n" if obj['summary'] else ""
+        history_string += f"AI: {obj['coder_response']}\n" if obj['coder_response'] else "" 
+        history_string += f"AI: {obj['web_search_response']}\n" if obj['web_search_response'] else ""
     res ={
         "result":None,
         "function_response":None,
@@ -263,6 +280,7 @@ async def chatGPT(chat,project_name,StateOfMind):
     }
     prompt = process_assistant_data(StateOfMind)
     message = [
+        {"role": "system", "content": history_string},
         {"role": "user", "content": prompt}
     ]
     print("\nMessage to GPT: \n", prompt)
@@ -282,7 +300,7 @@ async def chatGPT(chat,project_name,StateOfMind):
     print("\nFunctions: \n", functions)
     res["functions"] = functions
     function_response = dict()
-    coder = Coder(project_name)
+    
     if functions:
         parameters = extract_function_parameters(result)
         for func, parameter in zip(functions, parameters):
@@ -291,6 +309,7 @@ async def chatGPT(chat,project_name,StateOfMind):
             try:
                 if func == "coder":
                     query = parameter['query']
+                    coder = Coder(project_name)
                     coder_response = (coder.code(query))
                     parsed = coder.parse_output(coder_response)
                     function_response.update({"coder":parsed})
@@ -303,6 +322,11 @@ async def chatGPT(chat,project_name,StateOfMind):
                 elif func == "summary_text":
                     response = (parameter['message'])
                     function_response.update({"summary_text":response})
+                elif func == "getIssueSummary":
+                    statement = parameter['statement']
+                    issue_helper = issueHelper(project_name)
+                    response = issue_helper.getIssueSummary(statement)
+                    function_response.update({"getIssueSummary":response})
                 else:
                     pass
             except Exception as e:

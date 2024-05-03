@@ -120,8 +120,7 @@ function_call_example = """
     {
         "function_name": "getIssueSummary",
         "function_parameters": {
-            "repo": "shankerabhigyan/dsa-code",
-            "issue_number": "24"
+            "statement": "Can you tell me more about the issue number 1167 from the repo gpt-neox from EleutherAI?"
         }
     }
 ]
@@ -167,11 +166,8 @@ functions = """
         "function_name": "getIssueSummary",
         "description": "Get the summary of the issue from the github repository",
         "parameters" : {
-            "repo": {
-                "description": "The repository name from which the issue is to be fetched eg. shankerabhigyan/dsa-code"
-            },
-            "issue_number": {
-                "description": "The issue number to be fetched eg. 24"
+            "statement": {
+                "description": "statement to get the issue summary"
             }
         }
     }

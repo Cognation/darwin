@@ -1,0 +1,70 @@
+/* FileExplorer.module.css */
+.fileExplorer {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    border-radius: 8px;
+    background: #f5f5f5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tree {
+    margin-left: 10px;
+  }
+  
+  .node {
+    margin-bottom: 5px;
+  }
+  
+  .name {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    align-items: center;
+  }
+
+  .directory{
+    border: 1px solid rgb(132, 132, 132);
+    margin-top: 5px;
+    pointer-events: auto;
+  }
+  
+  .directory:hover .name {
+    background-color: #e5f1fc;
+  }
+  
+  .file {
+    color: #6c757d;
+    font-size: 18px;
+    pointer-events: auto;
+  }
+  
+  .arrow {
+    margin-right: 5px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #6c757d;
+  }
+  
+  .expanded {
+    transform: rotate(180deg);
+  }
+  
+  .collapsed {
+    transform: rotate(0deg);
+  }
+  
+  .children {
+    margin-left: 10px;
+  }
+  
+
+  .textmode{
+    color: white;
+    background-color: black;
+  }

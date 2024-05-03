@@ -128,56 +128,22 @@ function_call_example = """
 """
 
 functions = """
-[
-    {
-        "function_name": "web_search",
-        "description": "Searches the web for dynamic and updating information. This can be used for searching and debugging errors OR retrieving relevant code documentation for answering web queries.",
+function_name : web_search
+description : Searches the web for dynamic and updating information. This can be used for searching and debugging errors OR retrieving relevant code documentation for answering web queries.
 
-        "parameters" : {
-            "query": {
-                "description": "takes input as search query which can be searched on internet. Returns comprehensive answer to the query"
-            }
-        }
-    },
+function_name : coder
+description : helps you to explain a code, write a piece of code or execute a code or command line executions
 
-    {
-        "function_name": "coder",
-        "description": "helps you to explain a code, write a piece of code or execute a code or command line executions",
+function_name : summary_text
+description : Used to send message, concluding your work to the senior devs if you are satisfied with the function response
 
-        "parameters" : {
-            "query": {
-                "description": "textual input in natural language for the code to explain, write or execute"
-            }
-        }
-    },
-
-
-    {
-        "function_name": "summary_text",
-        "description": "Used to send message, concluding your work to the senior devs if you are satisfied with the function response",
-        "parameters" : {
-            "message": {
-                "description": "message to send to the user. Should contain a summary of the function response."
-            }
-        }
-    },
-
-    {
-        "function_name": "getIssueSummary",
-        "description": "Get the summary of the issue from the github repository",
-        "parameters" : {
-            "statement": {
-                "description": "statement to get the issue summary"
-            }
-        }
-    }
-]
-```
+function_name : getIssueSummary
+description : Get the summary of the issue from the github repository
 """
 
 
 
-def process_assistant_data(StateOfMind):
+def process_assistant_data(original_query,StateOfMind):
 
         
     #if(user_function):
@@ -186,7 +152,10 @@ def process_assistant_data(StateOfMind):
     system_prompt = f"""
     You have the important role of assisting the user with their queries using various functions available.
 
-    Example of function call:
+    FUNCTIONS:
+    {functions}
+    
+    EXAMPLES of function call:
     {function_call_example}
 
     Remember:
@@ -195,6 +164,9 @@ def process_assistant_data(StateOfMind):
     - Avoid redundant calls by only invoking functions when necessary.
     - Keep all functions within ``` ```
     - Follow the function call exactly as shown in the example above.
+
+    Original Query:
+    {original_query}
 
     STATE OF MIND:
     {StateOfMind}

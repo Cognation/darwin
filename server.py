@@ -26,7 +26,10 @@ from functions.issues import issueHelper
 
 # Initialize FastAPI app
 app = FastAPI()
-
+global history
+global web_search_response
+web_search_response = ""
+history = ""
 global_state = {
     "OI_chat": [],
     "OI_history": [],
@@ -235,10 +238,11 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     coder_response = ""
     web_search_response = ""
     StateOfMind = customer_message
+    original_query = customer_message
     global history
     history = get_db(project_name)
     while(True):
-        res = await chatGPT(openai_chat,project_name,StateOfMind)
+        res = await chatGPT(openai_chat,project_name,original_query,StateOfMind)
         function_response = res.get("function_response")
         functions = res.get("functions")
         # chat = add_chat_log(func, function_response.get(func), chat)
@@ -250,7 +254,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             print("coder_response ok")
         if('web_search' in functions):
             web_search_response = function_response["web_search"]
-            StateOfMind = "Web Search Response" + res["StateOfMind"]
+            StateOfMind = res["StateOfMind"]
             print("web_search_response ok")
         if('getIssueSummary' in functions):
             StateOfMind = "I have extracted the Issue details as follows : " + function_response["getIssueSummary"] + "\n"
@@ -264,8 +268,9 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(chat,project_name,StateOfMind):
+async def chatGPT(chat,project_name,original_query,StateOfMind):
     global history
+    global web_search_response
     history_string = ""
     for obj in history:
         history_string += f"User: {obj['user_query']}\n" if obj['user_query'] else ""
@@ -278,7 +283,8 @@ async def chatGPT(chat,project_name,StateOfMind):
         "functions":None,
         "StateOfMind":None
     }
-    prompt = process_assistant_data(StateOfMind)
+    prompt = process_assistant_data(original_query,StateOfMind)
+    print("history" ,history_string)
     message = [
         {"role": "system", "content": history_string},
         {"role": "user", "content": prompt}
@@ -310,15 +316,16 @@ async def chatGPT(chat,project_name,StateOfMind):
                 if func == "coder":
                     query = parameter['query']
                     coder = Coder(project_name)
-                    coder_response = (coder.code(query))
+                    coder_response = (coder.code(query,web_search_response))
                     parsed = coder.parse_output(coder_response)
                     function_response.update({"coder":parsed})
                     res["StateOfMind"] = coder.generate_summary(parsed)
                     # function_response.update({"summary_text":coder.generate_summary(parsed)})
                 elif func == "web_search":
                     response = (web_search(parameter['query']))
+                    web_search_response = response
                     function_response.update({"web_search":response})
-                    res["StateOfMind"] = "Browsed the web and retrieved relevant information."
+                    res["StateOfMind"] = "Browsed the web and retrieved relevant information. Ready to Code!"
                 elif func == "summary_text":
                     response = (parameter['message'])
                     function_response.update({"summary_text":response})

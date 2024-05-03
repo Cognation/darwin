@@ -23,10 +23,10 @@ class Coder():
         self.interpreter = interpreter.interpreter
         self.interpreter.llm.api_key = self.openai_api_key
         self.interpreter.llm.model = "gpt-4-turbo"
-        self.interpreter.llm.temperature = 1.1
+        self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
         self.interpreter.llm.context_window = 10000
-        self.interpreter.llm.max_tokens = 1000
+        self.interpreter.llm.max_tokens = 5000
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
@@ -34,16 +34,16 @@ class Coder():
         ci = "Run all pip install commands as pip install -y [package_name]."
         self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
     
-    def make_query(self, query):
-        q = "Based on the following context:\n" + json.dumps(self.chat) + "\n\nAnswer the following question:\n" + query
+    def make_query(self, query, context):
+        q = "Based on the following context:\n" + context + "\n\nAnswer the following question:\n" + query
         return q
     
     def add_chat(self, chat):
         self.chat.append(chat)
     def add_history(self, history):
         self.history.append(history)
-    def code(self, query):
-        q = make_query(query, self.chat)
+    def code(self, query, context):
+        q = make_query(query, context)
         messages = self.interpreter.chat(q, stream=False, display=True)
         self.add_history(messages)
         self.interpreter.chat(f"Write this code in a new file that does not already exist files in the {self.path} directory. Use proper formatting and no '\n's")

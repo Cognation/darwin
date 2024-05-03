@@ -22,6 +22,7 @@ from functions.web_api import *
 from functions.call_function import function_dict
 from functions.extract_web_links import extract_links, scrape_pdf
 from functions.issues import issueHelper
+import copy
 
 
 # Initialize FastAPI app
@@ -64,12 +65,12 @@ def update_db(project_name, val):
     
 def get_db(project_name):
     project = db.get(project_name)
-    return project
+    return copy.deepcopy(project)
 
 # Constants
 MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
 MAX_TOKENS = 10000
-TEMPERATURE = 1.1
+TEMPERATURE = 0
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):

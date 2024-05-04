@@ -5,6 +5,8 @@
   flex-wrap: wrap;
   flex-direction: column;
   flex-shrink: inherit;
+  overflow: hidden;
+  background: none;
 }
 
 .setting::-webkit-scrollbar {

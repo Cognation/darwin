@@ -151,14 +151,14 @@ function Navbar() {
           {isOpen && (
             <ul
               className={`${styles.options} ${
-                theme === "Dark" ? styles.projectmode : null
+                theme === "Dark" ? styles.optionlimode : null
               }`}
               onMouseLeave={() => (isOpen && !isnew ? setIsOpen(false) : null)}
             >
               {!isnew ? (
                 <li
                   className={`${styles.createNew} ${
-                    theme === "Dark" ? styles.projectmode : null
+                    theme === "Dark" ? styles.optionlimode : styles.optionlilight
                   }`}
                   onClick={() => {
                     setisnew(true);
@@ -169,7 +169,7 @@ function Navbar() {
               ) : (
                 <li
                   className={`${styles.createNew} ${
-                    theme === "Dark" ? styles.projectmode : null
+                    theme === "Dark" ? styles.optionlimode : styles.optionlilight
                   }`}
                 >
                   <input
@@ -180,7 +180,7 @@ function Navbar() {
                       outline: "none",
                     }}
                     className={`${styles.input} ${
-                      theme === "Dark" ? styles.projectmode : null
+                      theme === "Dark" ? styles.optionlimode : styles.optionlilight
                     }`}
                     ref={newprojectref}
                     type="text"
@@ -202,7 +202,7 @@ function Navbar() {
                   <li
                     key={index}
                     className={`${
-                      theme === "Dark" ? styles.projectmode : null
+                      theme === "Dark" ? styles.optionlimode : styles.optionlilight
                     }`}
                     onClick={() => handleSelectProject(project)}
                   >

@@ -3,6 +3,8 @@
     height: calc(100% - 5px);
     border-radius: 10px;
     margin-top: 2px;
+    overflow: hidden;
+    word-wrap: break-word;
 }
 
 .darkmode{

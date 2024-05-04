@@ -22,6 +22,7 @@ body{
   border: 1px solid #ccc;
   border-radius: 10px;
   width: 50%;
+  padding: 5px 0px;
 }
 
 .chatbotBox2 {
@@ -79,7 +80,7 @@ display: none;
 
 .input {
   width: 90%;
-  margin: 0px auto 10px auto;
+  margin: 3px auto 10px auto;
   padding: 15px 10px;
   border: none;
   outline: none;
@@ -87,6 +88,10 @@ display: none;
   height: fit-content;
   border: 1px solid black;
   border-radius: 10px;
+}
+
+.hidden{
+  display: hidden;
 }
 
 .darkmode_input{

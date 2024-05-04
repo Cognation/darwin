@@ -70,7 +70,7 @@ def get_db(project_name):
 # Constants
 MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
 MAX_TOKENS = 10000
-TEMPERATURE = 1.1
+TEMPERATURE = 0
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):
@@ -261,7 +261,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
             StateOfMind = "I have extracted the Issue details as follows : " + function_response["getIssueSummary"] + "\n"
             print("getIssueSummary ok")
         if('summary_text' in functions):
-            server_response = {"user_query":customer_message,"summary":StateOfMind, "coder_response":coder_response, "web_search_response":web_search_response}
+            server_response = {"user_query":customer_message,"summary":function_response["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
             update_db(project_name,server_response)
             history.append(server_response)
             return server_response
@@ -326,7 +326,7 @@ async def chatGPT(chat,project_name,original_query,StateOfMind):
                     response = (web_search(parameter['query']))
                     web_search_response = response
                     function_response.update({"web_search":response})
-                    res["StateOfMind"] = "Browsed the web and retrieved relevant information. Ready to Code!"
+                    res["StateOfMind"] = "Browsed the web and retrieved relevant information. Call the coder."
                 elif func == "summary_text":
                     response = (parameter['message'])
                     function_response.update({"summary_text":response})

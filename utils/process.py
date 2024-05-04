@@ -151,9 +151,6 @@ def process_assistant_data(original_query,StateOfMind):
             
     system_prompt = f"""
     You have the important role of assisting the user with their queries using various functions available.
-
-    FUNCTIONS:
-    {functions}
     
     EXAMPLES of function call:
     {function_call_example}
@@ -164,11 +161,14 @@ def process_assistant_data(original_query,StateOfMind):
     - Keep all functions within ```[ ]```
     - Follow the function call exactly as shown in the example above.
     - You can only communicate with the user through the functions provided.
+    - After receiving a satisfactory "State Of Mind" response, proceed to call the "summary_text" function.
 
-    STATE OF MIND:
+    ORIGINAL QUERY:
+    {original_query}
+
+    Current STATE OF MIND:
     {StateOfMind}
     
-    After receiving a satisfactory "State Of Mind" response, proceed to call the "summary_text" function.
     """
 
     return system_prompt

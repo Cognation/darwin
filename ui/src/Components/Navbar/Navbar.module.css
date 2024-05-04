@@ -27,6 +27,15 @@
     border-radius: 0px;
 }
 
+.optionlimode{
+    color: white;
+    background-color: black;
+}
+
+.optionlimode:hover{
+    background-color: rgb(69, 69, 69);
+}
+
 .ul{
     display: flex;
     list-style: none; 
@@ -341,10 +350,11 @@
         padding: 10px;
         cursor: pointer;
       }
-      .options li:hover {
-        background-color: rgb(50, 50, 50);
-      }
       
+      .optionlilight:hover {
+        background-color: rgb(169, 169, 169);
+      }
+          
       .internet{
         display: flex;
         justify-content: center;

@@ -187,8 +187,9 @@ const Code = () => {
       // }
 
       if(res_json?.coder_response?.message){
-        setplan(res_json?.coder_response?.message);
-        console.log("Plan  : ", res_json?.coder_response?.message);
+        const p = res_json?.coder_response?.message.replace("Based on the following context:\n\"\"\n\nAnswer the following question:" , "");
+        setplan(p);
+        console.log("Plan  : ", p);
       }
     } catch (err) {
       console.log(err);
@@ -197,7 +198,7 @@ const Code = () => {
       return;
     }
   };
-
+  
   return (
     <div className={`${styles.container} `}>
       <div
@@ -230,15 +231,15 @@ const Code = () => {
         </button>
       </div>
       <div
-        className={`${editor_expanded ? styles.chatbotBox : styles.chatbotBox2} ${
-          theme === "Dark" ? styles.darkmode : null
+        className={`${editor_expanded ? styles.chatbotBox : styles.chatbotBox2}  ${
+          theme === "Dark" && !issettingopen ? styles.darkmode : null
         }`}
       >
         {/* <div className={styles.chatHeader}>Chatbot</div> */}
 
         {!issettingopen ? (
           <>
-            <div className={styles.messageContainer}>
+            <div className={`${styles.messageContainer} `}>
               {messages &&
                 messages.length > 0 &&
                 messages.map((message, index) => {

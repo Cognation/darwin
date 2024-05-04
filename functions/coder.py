@@ -31,7 +31,7 @@ class Coder():
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
         self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
-        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper blocks and always execute the code you write."
+        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
         self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
     
     def make_query(self, query, context):

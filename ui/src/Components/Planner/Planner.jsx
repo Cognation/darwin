@@ -2,16 +2,14 @@ import React from 'react'
 import styles from './Planner.module.css';
 import { useZustandStore } from "../../store";
 
-function Planner({plan}) {
-
-  console.log("Plan : " , plan);
+function Planner({plan=["Plan of execution will be displayed here!!"]}) {
 
   const { theme } = useZustandStore();
 
 
   return (
-    <div className={`${styles.planner} ${theme==="Dark" ? styles.darkmode : null}`}>
-      <div className={styles.messageContainer}>
+    <div className={`${styles.planner} ${theme==="Dark" ? styles.darkmode : styles.light}`}>
+      <div className={`${styles.messageContainer}`}>
               {plan &&
                 plan.length > 0 &&
                 plan.map((message, index) => {
@@ -126,11 +124,6 @@ function Planner({plan}) {
                   );
                 })}
             </div>
-            {/* {plan.map((message , index)=>{
-              return (
-              <p key={index}>{message}</p>
-              )
-            })} */}
     </div>
   )
 }

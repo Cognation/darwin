@@ -13,6 +13,7 @@ import { ReactComponent as SETTING_SVG } from "../../Assets/SVG/setting.svg";
 import { ReactComponent as SETTING_SVG_WHITE } from "../../Assets/SVG/setting-white.svg";
 import Setting from "../Setting/Setting";
 import OtherBoxes from "../Otherboxes/Manager";
+import { getCode } from "../../api/getCode";
 
 const Code = () => {
   const {
@@ -26,7 +27,7 @@ const Code = () => {
     setFiles,
     theme,
     editor_expanded,
-    setEditor_expanded
+    setEditor_expanded,
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
@@ -84,17 +85,7 @@ const Code = () => {
     formData.append("customer_message", message);
 
     try {
-      // const backend_res = getCode(formData);
-      const backend_res = await fetch(`${process.env.REACT_APP_BACKEND}/chat`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          type: "formData",
-        },
-        body: formData,
-      });
-
-      const res_text = await backend_res.text();
+      const res_text = await getCode(formData);
 
       console.log("Response : ", res_text);
 
@@ -103,42 +94,12 @@ const Code = () => {
         return;
       }
 
-      // if (res_text[0] === "{" && res_text[1] === `"`) {
-      //   const res_json = JSON.parse(res_text);
-      //   setistyping(false);
-      //   msgs.push({ text: res_json.message, sender: "bot" });
-      //   setMessages(msgs);
-      //   return;
-      // }
-
-      // if (res_text[0] !== "[" && res_text[1] !== "{") {
-      //   setistyping(false);
-      //   msgs.push({
-      //     text: res_text.substring(1, res_text.length - 1),
-      //     sender: "bot",
-      //   });
-      //   setMessages(msgs);
-      //   return;
-      // }
-
       const res_json = JSON.parse(res_text);
 
       setistyping(false);
 
-      // let newfile = files;
-
-      // newfile.push({
-      //   filename: `${selectedProject}-${newfile.length + 1}`,
-      //   language: "",
-      //   code: "",
-      // });
-
       console.log("Res : ", res_json);
 
-      // for (let item of res_json) {
-      //   console.log("Item : ", item);
-
-      // if (item?.type === "message" && item.role !== "user") {
       msgs.push({ text: res_json?.summary, sender: "bot" });
       setMessages(msgs);
       console.log("Msg : ", res_json?.summary);
@@ -147,50 +108,28 @@ const Code = () => {
       let c = "";
       let o = "";
 
-      if(res_json && res_json?.coder_response && res_json?.coder_response.length > 0){
-        for (const item of res_json?.coder_response?.code) {
-          c += item.code + "\n";
-          setlanguage(item?.language);
-        }
-      }
-
-      if(res_json && res_json?.coder_response && res_json?.coder_response.lenght > 0){
-        for (const item of res_json?.coder_response?.output) {
-          if (item) {
-            o += item + "\n";
+      if (
+        res_json &&
+        res_json?.coder_response &&
+        res_json?.coder_response.length > 0
+      ) {
+        for (const item of res_json?.coder_response) {
+          if (item?.output) {
+            o = item?.output + "\n";
+          }
+          if(item?.message){
+            setplan(item?.message);
           }
         }
       }
 
-      // if (item?.type === "code") {
-      // codee = item?.content;
       setcode(c);
-      console.log("Code : ", c);
-      // setlanguage(item?.format);
 
-      // newfile[newfile.length - 1].code = item?.content;
-      // newfile[newfile.length - 1].language = item?.format;
-
-      // setselected_file(newfile[newfile.length - 1]);
-      // if (newfile[newfile.length - 1].code !== "") {
-      //   console.log("Code : ", newfile[newfile.length - 1].code);
-      //   setFiles(newfile);
-      // }
-      // }
-
-      // if (item?.type === "console" && item?.format === "output") {
       let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
       ld.push(<TerminalInput>{o}</TerminalInput>);
       setLineData(ld);
       console.log("Output : ", o);
-      // }
-      // }
 
-      if(res_json?.coder_response?.message){
-        const p = res_json?.coder_response?.message.replace("Based on the following context:\n\"\"\n\nAnswer the following question:" , "");
-        setplan(p);
-        console.log("Plan  : ", p);
-      }
     } catch (err) {
       console.log(err);
       setistyping(false);
@@ -198,7 +137,7 @@ const Code = () => {
       return;
     }
   };
-  
+
   return (
     <div className={`${styles.container} `}>
       <div
@@ -231,9 +170,9 @@ const Code = () => {
         </button>
       </div>
       <div
-        className={`${editor_expanded ? styles.chatbotBox : styles.chatbotBox2}  ${
-          theme === "Dark" && !issettingopen ? styles.darkmode : null
-        }`}
+        className={`${
+          editor_expanded ? styles.chatbotBox : styles.chatbotBox2
+        }  ${theme === "Dark" && !issettingopen ? styles.darkmode : null}`}
       >
         {/* <div className={styles.chatHeader}>Chatbot</div> */}
 
@@ -251,7 +190,11 @@ const Code = () => {
                         className={`${styles.message} ${
                           styles[message.sender]
                         } ${
-                          theme === "Dark" ? message.sender==="user" ? styles.userdarkmode : styles.botdarkmode : null
+                          theme === "Dark"
+                            ? message.sender === "user"
+                              ? styles.userdarkmode
+                              : styles.botdarkmode
+                            : null
                         }`}
                       >
                         {texts &&

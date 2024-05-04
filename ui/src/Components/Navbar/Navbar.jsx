@@ -16,7 +16,7 @@ function Navbar() {
     messages,
     setMessages,
     theme,
-    setFiles
+    setFiles,
   } = useZustandStore();
 
   useEffect(() => {
@@ -51,29 +51,13 @@ function Navbar() {
       if (isnew) setisnew(false);
       setselectedProject(project);
 
-      // const formData = new FormData();
-      // formData.append("project_name", project);
-
-      // const chat = await fetch(
-      //   `${process.env.REACT_APP_BACKEND}/get_project_data`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       Accept: "application/json",
-      //       type: "formData",
-      //     },
-      //     body: formData,
-      //   }
-      // );
-
-      // const data = JSON.parse(await chat.text());
       const data = await getprojectData(project);
       // console.log("Chat History : " , data.OI_chat);
       const chat_history = data;
       let msgs = [];
 
       for (const item of chat_history) {
-        console.log("Item : " , item);
+        console.log("Item : ", item);
         msgs.push({
           text: item?.user_query,
           sender: "user",
@@ -97,6 +81,7 @@ function Navbar() {
 
   const handleCreateNewProject = async (project_name) => {
     try {
+      if (!project_name) return;
       setIsOpen(false);
       // console.log("Create new project.");
 
@@ -158,7 +143,9 @@ function Navbar() {
               {!isnew ? (
                 <li
                   className={`${styles.createNew} ${
-                    theme === "Dark" ? styles.optionlimode : styles.optionlilight
+                    theme === "Dark"
+                      ? styles.optionlimode
+                      : styles.optionlilight
                   }`}
                   onClick={() => {
                     setisnew(true);
@@ -169,7 +156,9 @@ function Navbar() {
               ) : (
                 <li
                   className={`${styles.createNew} ${
-                    theme === "Dark" ? styles.optionlimode : styles.optionlilight
+                    theme === "Dark"
+                      ? styles.optionlimode
+                      : styles.optionlilight
                   }`}
                 >
                   <input
@@ -180,7 +169,9 @@ function Navbar() {
                       outline: "none",
                     }}
                     className={`${styles.input} ${
-                      theme === "Dark" ? styles.optionlimode : styles.optionlilight
+                      theme === "Dark"
+                        ? styles.optionlimode
+                        : styles.optionlilight
                     }`}
                     ref={newprojectref}
                     type="text"
@@ -198,17 +189,22 @@ function Navbar() {
               )}
               {projectList &&
                 projectList.length > 0 &&
-                projectList.map((project, index) => (
-                  <li
-                    key={index}
-                    className={`${
-                      theme === "Dark" ? styles.optionlimode : styles.optionlilight
-                    }`}
-                    onClick={() => handleSelectProject(project)}
-                  >
-                    {project}
-                  </li>
-                ))}
+                projectList.map(
+                  (project, index) =>
+                    project !== "" && (
+                      <li
+                        key={index}
+                        className={`${
+                          theme === "Dark"
+                            ? styles.optionlimode
+                            : styles.optionlilight
+                        }`}
+                        onClick={() => handleSelectProject(project)}
+                      >
+                        {project}
+                      </li>
+                    )
+                )}
             </ul>
           )}
         </div>

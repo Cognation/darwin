@@ -85,6 +85,7 @@ const FileExplorer = ({ data }) => {
   };
 
   const renderNode = (node, parentPath = "") => {
+    if(node.name === "history.json") return;
     const fullPath = parentPath ? `${parentPath}/${node.name}` : node.name;
     const isExpanded = expandedNodes[fullPath];
     const hasChildren =

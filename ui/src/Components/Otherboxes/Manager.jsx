@@ -101,6 +101,17 @@ function Manager({ colorMode, lineData, plan }) {
         </li>
         <li
           className={`${styles.li} ${
+            selected === "planner" ? styles.selected : null
+          }`}
+          name="planner"
+          onClick={(e) => {
+            setselected("planner");
+          }}
+        >
+          Planner
+        </li>
+        <li
+          className={`${styles.li} ${
             selected === "terminal" ? styles.selected : null
           }`}
           name="terminal"
@@ -131,17 +142,6 @@ function Manager({ colorMode, lineData, plan }) {
           }}
         >
           File Explorer
-        </li>
-        <li
-          className={`${styles.li} ${
-            selected === "planner" ? styles.selected : null
-          }`}
-          name="planner"
-          onClick={(e) => {
-            setselected("planner");
-          }}
-        >
-          Planner
         </li>
       </ul>
       <div className={`${styles.box}`}>

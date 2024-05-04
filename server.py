@@ -29,21 +29,10 @@ import copy
 app = FastAPI()
 global history
 global web_search_response
+global StateOfMind
 web_search_response = ""
 history = ""
-global_state = {
-    "OI_chat": [],
-    "OI_history": [],
-    "project_id": ""
-}
-
-async def update_global_state(key, val):
-    global global_state
-    global_state[key] = val
-
-async def get_global_state(key):
-    global global_state
-    return global_state[key]
+StateOfMind = ""
 
 # Enable CORS for all routes
 origins = ["*"]
@@ -221,35 +210,24 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     data = await request.form()
     project_name = data.get("project_name")
     customer_message = data.get("customer_message")
-    # content = ""
-    # secondary_knowledge = ""
-    # save_path_da = f"user_data/{user_id}/{assistant_name}/data_analysis"
-    # check if save_path_da exists else create it
-    # if not os.path.exists(save_path_da):
-    #    os.makedirs(save_path_da)
-    
-
-    # server_response = dict()
     server_response = ""
-    old_chat = await get_global_state("OI_chat")
-    chat = old_chat + [{"User":customer_message}]
-    # parse chat for openai prompt
-    openai_chat = json.dumps(chat)
-    funtion_response = ""
-    coder_response = ""
+    function_response = ""
+    coder_response = list()
     web_search_response = ""
-    StateOfMind = customer_message
+    global StateOfMind 
+    if(StateOfMind == ""):
+        StateOfMind = customer_message
     original_query = customer_message
     global history
     history = get_db(project_name)
     while(True):
-        res = await chatGPT(openai_chat,project_name,original_query,StateOfMind)
+        res = await chatGPT(project_name,original_query)
         function_response = res.get("function_response")
         functions = res.get("functions")
         # chat = add_chat_log(func, function_response.get(func), chat)
         # server_response = function_response.get(functions)
         if('coder' in functions):
-            coder_response = function_response["coder"]
+            coder_response.append(function_response["coder"])
             StateOfMind = "Coder Response : " + res["StateOfMind"]
             print("StateOfMind", StateOfMind)
             print("coder_response ok")
@@ -269,9 +247,10 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
 def add_chat_log(agent, response, chat_log=""):
     return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(chat,project_name,original_query,StateOfMind):
+async def chatGPT(project_name,original_query):
     global history
     global web_search_response
+    global StateOfMind
     history_string = ""
     for obj in history:
         history_string += f"User: {obj['user_query']}\n" if obj['user_query'] else ""

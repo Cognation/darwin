@@ -33,7 +33,8 @@ class Coder():
         self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
         ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
         self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
-    
+        self.load_history()
+
     def make_query(self, query, context):
         q = "Based on the following context:\n" + context + "\n\nWrite and execute code for the query:\n" + query
         return q
@@ -42,11 +43,21 @@ class Coder():
         self.chat.append(chat)
     def add_history(self, history):
         self.history.append(history)
+    def save_history(self):
+        with open(os.path.join(self.path, "history.json"), "w") as f:
+            json.dump(self.history, f)
+    def load_history(self):
+        if not os.path.exists(os.path.join(self.path, "history.json")):
+            with open(os.path.join(self.path, "history.json"), "w") as f:
+                json.dump([], f)
+        with open(os.path.join(self.path, "history.json"), "r") as f:
+            self.history = json.load(f)
     def code(self, query, context):
         q = make_query(query, context)
         messages = self.interpreter.chat(q, stream=False, display=True)
         self.add_history(messages)
         self.interpreter.chat(f"Write this code in a new file that does not already exist files in the {self.path} directory. Use proper formatting and no '\n's")
+        self.save_history()
         return messages
     def parse_output(self, messages):
         response = {"code":[], "output":[], "message":[]} # code, console, message

@@ -5,6 +5,7 @@ from typing import List
 import ast
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException, File, UploadFile, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import fastapi
 from decouple import config
@@ -23,6 +24,7 @@ from functions.call_function import function_dict
 from functions.extract_web_links import extract_links, scrape_pdf
 from functions.issues import issueHelper
 import copy
+import traceback
 
 
 # Initialize FastAPI app
@@ -210,116 +212,81 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     data = await request.form()
     project_name = data.get("project_name")
     customer_message = data.get("customer_message")
-    server_response = ""
-    function_response = ""
-    coder_response = list()
-    web_search_response = ""
     global StateOfMind 
     if(StateOfMind == ""):
         StateOfMind = customer_message
     original_query = customer_message
     global history
     history = get_db(project_name)
-    while(True):
-        res = await chatGPT(project_name,original_query)
-        function_response = res.get("function_response")
-        functions = res.get("functions")
-        # chat = add_chat_log(func, function_response.get(func), chat)
-        # server_response = function_response.get(functions)
-        if('coder' in functions):
-            coder_response.append(function_response["coder"])
-            StateOfMind = "Coder Response : " + res["StateOfMind"]
-            print("StateOfMind", StateOfMind)
-            print("coder_response ok")
-        if('web_search' in functions):
-            web_search_response = function_response["web_search"]
-            StateOfMind = res["StateOfMind"]
-            print("web_search_response ok")
-        if('getIssueSummary' in functions):
-            StateOfMind = "I have extracted the Issue details as follows : " + function_response["getIssueSummary"] + "\n"
-            print("getIssueSummary ok")
-        if('summary_text' in functions):
-            server_response = {"user_query":customer_message,"summary":function_response["summary_text"], "coder_response":coder_response, "web_search_response":web_search_response}
-            update_db(project_name,server_response)
-            history.append(server_response)
-            return server_response
+    return StreamingResponse(chatGPT(project_name,original_query))
 
-def add_chat_log(agent, response, chat_log=""):
-    return f"{chat_log}{agent}: {response}\n"
 
-async def chatGPT(project_name,original_query):
+def chatGPT(project_name,original_query):
     global history
     global web_search_response
     global StateOfMind
     history_string = ""
     for obj in history:
         history_string += f"User: {obj['user_query']}\n" if obj['user_query'] else ""
-        history_string += f"AI: {obj['summary']}\n" if obj['summary'] else ""
-        history_string += f"AI: {obj['coder_response']}\n" if obj['coder_response'] else "" 
-        history_string += f"AI: {obj['web_search_response']}\n" if obj['web_search_response'] else ""
-    res ={
-        "result":None,
-        "function_response":None,
-        "functions":None,
-        "StateOfMind":None
-    }
-    prompt = process_assistant_data(original_query,StateOfMind)
-    print("history" ,history_string)
-    message = [
-        {"role": "system", "content": history_string},
-        {"role": "user", "content": prompt}
-    ]
-    print("\nMessage to GPT: \n", prompt)
-    gpt_response = openai.chat.completions.create(
-        model=MODEL_NAME,
-        messages=message,
-        temperature=TEMPERATURE,
-    )
-    print("\ngpt_response",gpt_response)
-    result = gpt_response.choices[0].message.content.strip()
-    print("\n\nResult: \n", result)
+        history_string += f"AI_Summary: {obj['summary']}\n" if obj['summary'] else ""
+        history_string += f"AI_Coder: {obj['coder_response']}\n" if obj['coder_response'] else "" 
+        history_string += f"Web_search: {obj['web_search_response']}\n" if obj['web_search_response'] else ""
+    Do = True
+    while(Do):
+        prompt = process_assistant_data(original_query,StateOfMind)
+        print("history" ,history_string)
+        message = [
+            {"role": "system", "content": history_string},
+            {"role": "user", "content": prompt}
+        ]
+        print("\nMessage to GPT: \n", prompt)
+        gpt_response = openai.chat.completions.create(
+            model=MODEL_NAME,
+            messages=message,
+            temperature=TEMPERATURE,
+        )
+        print("\ngpt_response",gpt_response)
+        result = gpt_response.choices[0].message.content.strip()
+        print("\n\nResult: \n", result)
 
-    functions = extract_function_names(result)
-    res["result"] = result    
+        functions = extract_function_names(result)
+        print("\nFunctions: \n", functions)
+        
+        if functions:
+            parameters = extract_function_parameters(result)
+            for func, parameter in zip(functions, parameters):
+                print(func)
+                print(parameter)
+                try:
+                    if func == "coder":
+                        query = parameter['query']
+                        coder = Coder(project_name)
+                        yield from coder.code(query,web_search_response)
+                        StateOfMind = coder.summary
+                        
+                    elif func == "web_search":
+                        response = (web_search(parameter['query']))
+                        yield json.dumps({"web_search":response}).encode("utf-8") + b"\n"
+                        StateOfMind = "Browsed the web and retrieved relevant information. Call the coder."
+                    
+                    elif func == "summary_text":
+                        response = (parameter['message'])
+                        yield json.dumps({"summary_text":response}).encode("utf-8") + b"\n"
+                        yield None
+                        Do = False
 
-    # print("\nChat: \n", chat)    
-    print("\nFunctions: \n", functions)
-    res["functions"] = functions
-    function_response = dict()
+                    elif func == "getIssueSummary":
+                        statement = parameter['statement']
+                        issue_helper = issueHelper(project_name)
+                        issue_summary = issue_helper.getIssueSummary(statement)
+                        StateOfMind = "I have extracted the Issue details as follows : " + issue_summary
+                        yield {"getIssueSummary":issue_summary}
+                    else:
+                        pass
+                except Exception as e:  
+                    print(f"Error calling the function {func} with parameters {parameter}: {e}")
+                    traceback.print_exc()
     
-    if functions:
-        parameters = extract_function_parameters(result)
-        for func, parameter in zip(functions, parameters):
-            print(func)
-            print(parameter)
-            try:
-                if func == "coder":
-                    query = parameter['query']
-                    coder = Coder(project_name)
-                    coder_response = coder.code(query,web_search_response)
-                    parsed = coder.parse_output(coder_response)
-                    function_response.update({"coder":parsed})
-                    res["StateOfMind"] = coder.generate_summary(parsed)
-                    # function_response.update({"summary_text":coder.generate_summary(parsed)})
-                elif func == "web_search":
-                    response = (web_search(parameter['query']))
-                    web_search_response = response
-                    function_response.update({"web_search":response})
-                    res["StateOfMind"] = "Browsed the web and retrieved relevant information. Call the coder."
-                elif func == "summary_text":
-                    response = (parameter['message'])
-                    function_response.update({"summary_text":response})
-                elif func == "getIssueSummary":
-                    statement = parameter['statement']
-                    issue_helper = issueHelper(project_name)
-                    response = issue_helper.getIssueSummary(statement)
-                    function_response.update({"getIssueSummary":response})
-                else:
-                    pass
-            except Exception as e:
-                print(f"Error calling the function {func} with parameters {parameter}: {e}")
-    res["function_response"] = function_response
-    return res
 
 # start the server
 if __name__ == "__main__":

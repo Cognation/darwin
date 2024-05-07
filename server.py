@@ -61,7 +61,7 @@ def get_db(project_name):
 # Constants
 MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
 MAX_TOKENS = 10000
-TEMPERATURE = 0
+TEMPERATURE = 0.2
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):
@@ -232,7 +232,7 @@ def chatGPT(project_name,original_query):
         history_string += f"AI_Coder: {obj['coder_response']}\n" if obj['coder_response'] else "" 
         history_string += f"Web_search: {obj['web_search_response']}\n" if obj['web_search_response'] else ""
     Do = True
-    while(Do):
+    while(True):
         prompt = process_assistant_data(original_query,StateOfMind)
         print("history" ,history_string)
         message = [
@@ -254,38 +254,45 @@ def chatGPT(project_name,original_query):
         
         if functions:
             parameters = extract_function_parameters(result)
-            for func, parameter in zip(functions, parameters):
-                print(func)
-                print(parameter)
-                try:
-                    if func == "coder":
-                        query = parameter['query']
-                        coder = Coder(project_name)
-                        yield from coder.code(query,web_search_response)
-                        StateOfMind = coder.summary
-                        
-                    elif func == "web_search":
-                        response = (web_search(parameter['query']))
-                        yield json.dumps({"web_search":response}).encode("utf-8") + b"\n"
-                        StateOfMind = "Browsed the web and retrieved relevant information. Call the coder."
+            func = functions[0]
+            parameter = parameters[0]
+            print(func)
+            print(parameter)
+            try:
+                if func == "coder":
+                    query = parameter['query']
+                    coder = Coder(project_name)
+                    yield from coder.code(query,web_search_response)
+                    StateOfMind = coder.summary
                     
-                    elif func == "summary_text":
-                        response = (parameter['message'])
-                        yield json.dumps({"summary_text":response}).encode("utf-8") + b"\n"
-                        yield None
-                        Do = False
+                elif func == "web_search":
+                    response = (web_search(parameter['query']))
+                    out = json.dumps({"web_search":str(response)})
+                    yield out.encode("utf-8") + b"\n"
+                    StateOfMind = "Browsed the web and retrieved relevant information. Call the coder."
+                
+                elif func == "summary_text":
+                    response = (parameter['message'])
+                    # check for ` in response and remove it
+                    response = response.replace("`","")
+                    out = json.dumps({"summary_text":response})
+                    yield out.encode("utf-8") + b"\n"
+                    print("here")
+                    yield b''
+                    break
 
-                    elif func == "getIssueSummary":
-                        statement = parameter['statement']
-                        issue_helper = issueHelper(project_name)
-                        issue_summary = issue_helper.getIssueSummary(statement)
-                        StateOfMind = "I have extracted the Issue details as follows : " + issue_summary
-                        yield {"getIssueSummary":issue_summary}
-                    else:
-                        pass
-                except Exception as e:  
-                    print(f"Error calling the function {func} with parameters {parameter}: {e}")
-                    traceback.print_exc()
+                elif func == "getIssueSummary":
+                    statement = parameter['statement']
+                    issue_helper = issueHelper(project_name)
+                    issue_summary = issue_helper.getIssueSummary(statement)
+                    StateOfMind = "I have extracted the Issue details as follows : " + issue_summary
+                    yield {"getIssueSummary":issue_summary}
+            except Exception as e:  
+                print(f"Error calling the function {func} with parameters {parameter}: {e}")
+                traceback.print_exc()
+        else:
+            pass
+        
     
 
 # start the server

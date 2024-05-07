@@ -10,7 +10,7 @@ from openai import OpenAI
 
 
 def make_query(query, chat):
-    q = "Based on the following context:\n" + json.dumps(chat) + "\n\nAnswer the following question:\n" + query
+    q = "Based on the following context:\n" + json.dumps(chat) + "\n\Answer and Code the following query:\n" + query
     return q
 
 class Coder():
@@ -22,7 +22,7 @@ class Coder():
         self.openai = OpenAI(api_key=openai_api_key)
         self.interpreter = interpreter.interpreter
         self.interpreter.llm.api_key = self.openai_api_key
-        self.interpreter.llm.model = "gpt-4-turbo"
+        self.interpreter.llm.model = "gpt-3.5-turbo"
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
         self.interpreter.llm.context_window = 10000
@@ -30,9 +30,15 @@ class Coder():
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
-        self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
+        # self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+            print(f"Directory created: {self.path}")
+        else:
+            print(f"Directory already exists: {self.path}")
+
         ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
-        self.interpreter.custom_instructions = custom_instructions + ci # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
+        self.interpreter.custom_instructions = ci + custom_instructions # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
         self.load_history()
 
     def make_query(self, query, context):
@@ -108,6 +114,7 @@ class Coder():
         {code}
         Interpreter Message:
         {message}
+        Write in plain text.
         """
         summary = self.openai.chat.completions.create(
             model = "gpt-3.5-turbo",

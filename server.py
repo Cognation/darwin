@@ -200,7 +200,6 @@ async def get_projects():
     return list
 
 @app.post("/chat")
-
 async def chat(request: Request,file: UploadFile = None,image: UploadFile = None):
     """
     FORM DATA FORMAT:
@@ -231,7 +230,6 @@ def chatGPT(project_name,original_query):
         history_string += f"AI_Summary: {obj['summary']}\n" if obj['summary'] else ""
         history_string += f"AI_Coder: {obj['coder_response']}\n" if obj['coder_response'] else "" 
         history_string += f"Web_search: {obj['web_search_response']}\n" if obj['web_search_response'] else ""
-    Do = True
     while(True):
         prompt = process_assistant_data(original_query,StateOfMind)
         print("history" ,history_string)
@@ -262,13 +260,18 @@ def chatGPT(project_name,original_query):
                 if func == "coder":
                     query = parameter['query']
                     coder = Coder(project_name)
-                    yield from coder.code(query,web_search_response)
+                    for chunk in coder.code(query,web_search_response):
+                        if json.loads(chunk) == {"exit":True}:
+                            break
+                        yield chunk
+                        update_db(project_name,json.loads(chunk))
                     StateOfMind = coder.summary
                     
                 elif func == "web_search":
                     response = (web_search(parameter['query']))
                     out = json.dumps({"web_search":str(response)})
                     yield out.encode("utf-8") + b"\n"
+                    update_db(project_name,{"web_search":str(response)})
                     StateOfMind = "Browsed the web and retrieved relevant information. Call the coder."
                 
                 elif func == "summary_text":
@@ -277,7 +280,7 @@ def chatGPT(project_name,original_query):
                     response = response.replace("`","")
                     out = json.dumps({"summary_text":response})
                     yield out.encode("utf-8") + b"\n"
-                    print("here")
+                    update_db(project_name,{"summary_text":response})
                     yield b''
                     break
 
@@ -287,6 +290,7 @@ def chatGPT(project_name,original_query):
                     issue_summary = issue_helper.getIssueSummary(statement)
                     StateOfMind = "I have extracted the Issue details as follows : " + issue_summary
                     yield {"getIssueSummary":issue_summary}
+                    update_db(project_name,{"getIssueSummary":issue_summary})
             except Exception as e:  
                 print(f"Error calling the function {func} with parameters {parameter}: {e}")
                 traceback.print_exc()

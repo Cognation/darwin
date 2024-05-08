@@ -18,6 +18,7 @@ class Coder():
         import interpreter
         self.chat = []
         self.history = []
+        self.errors = 0
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.openai = OpenAI(api_key=openai_api_key)
         self.interpreter = interpreter.interpreter
@@ -82,8 +83,15 @@ class Coder():
                 if 'content' in chunk:
                     if(type(chunk['content'])==dict):
                         chunk = chunk['content']
+                    if "key" == "console" and chunk["format"] == "output" and "Error" in chunk["content"]:
+                        self.errors += 1
+                        if self.errors > 2:
+                            self.interpreter.chat("Too many errors. Exiting.")
+                            self.summary = "Got errors while writing code, here is a summary of what was done.\n" + self.generate_summary(self.parse_output(messages)) + "Recommend calling Web Search."
+                            yield json.dumps({"exit":True}).encode("utf-8") + b"\n"
+                            break
                     temp += str(chunk["content"])
-        print("Message : ",messages)
+        # print("Message : ",messages)
         self.interpreter.chat(f"Write this code in a new file that does not already exist in the {self.path} directory. Use proper formatting and no '\n's")
         self.save_history()
         self.summary = self.generate_summary(self.parse_output(messages))

@@ -143,7 +143,7 @@ description : Get the summary of the issue from the github repository
 
 
 
-def process_assistant_data(original_query,StateOfMind):
+def process_assistant_data(original_query,StateOfMind,iter):
 
         
     #if(user_function):
@@ -161,17 +161,15 @@ def process_assistant_data(original_query,StateOfMind):
     - Always keep all functions within ``` ``` and enclosed in a list as shown in the example above.
     - Follow the function call exactly as shown in the example above.
     - You can only communicate with the user through the functions provided.
-    - After receiving a "State Of Mind" response with constructive conclusions, proceed to call the "summary_text" function.
     - You should include links from the original query in the web_search function query to provide additional information.
-
-    ORIGINAL QUERY:
-    {original_query}
+    - IMP: After receiving a "State Of Mind" response with some actions and conclusions, proceed to call the "summary_text" function.
+    
+    Skipping any of the above instructions will lead to a penalty
 
     Current STATE OF MIND:
     {StateOfMind}
-    
-    VERY IMPORTANT : If the STATE OF MIND justifies the ORIGINAL QUERY, call the "summary_text" function to conclude the conversation.
-    Skipping any of the instructions will lead to a penalty
+        
+    After receiving a satisfactory "State Of Mind" response, proceed to call the "summary_text" function.
     """
 
     return system_prompt

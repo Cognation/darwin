@@ -35,6 +35,8 @@ global StateOfMind
 web_search_response = ""
 history = ""
 StateOfMind = ""
+cc = 0
+iter = 0
 
 # Enable CORS for all routes
 origins = ["*"]
@@ -218,6 +220,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     global history
     history = get_db(project_name)
     history.append({"user_query":original_query})
+    update_db(project_name,{"user_query":original_query})
     return StreamingResponse(chatGPT(project_name,original_query))
 
 
@@ -225,6 +228,8 @@ def chatGPT(project_name,original_query):
     global history
     global web_search_response
     global StateOfMind
+    global cc
+    global iter
     history_string = ""
     for obj in history:
         history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
@@ -233,7 +238,8 @@ def chatGPT(project_name,original_query):
         history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
         history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
     while(True):
-        prompt = process_assistant_data(original_query,StateOfMind)
+        iter+=1
+        prompt = process_assistant_data(original_query,StateOfMind,iter)
         print("history" ,history_string)
         message = [
             {"role": "system", "content": history_string},
@@ -267,7 +273,10 @@ def chatGPT(project_name,original_query):
                             break
                         yield chunk
                         update_db(project_name,json.loads(chunk))
-                    StateOfMind = coder.summary
+                    StateOfMind = "The coder function took the following steps :\n" + coder.summary
+                    cc+=1
+                    if cc >= 2:
+                        StateOfMind = "NOW CALL THE summary_text FUNCTION!"
                     
                 elif func == "web_search":
                     response = (web_search(parameter['query']))
@@ -285,6 +294,8 @@ def chatGPT(project_name,original_query):
                     yield out.encode("utf-8") + b"\n"
                     update_db(project_name,{"summary_text":response})
                     yield b''
+                    cc = 0
+                    iter = 0
                     break
 
                 elif func == "getIssueSummary":

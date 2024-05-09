@@ -23,7 +23,7 @@ class Coder():
         self.openai = OpenAI(api_key=openai_api_key)
         self.interpreter = interpreter.interpreter
         self.interpreter.llm.api_key = self.openai_api_key
-        self.interpreter.llm.model = "gpt-3.5-turbo"
+        self.interpreter.llm.model = "gpt-4-turbo"
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
         self.interpreter.llm.context_window = 10000

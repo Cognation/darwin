@@ -146,12 +146,12 @@ function Manager({ colorMode, lineData, plan }) {
       </ul>
       <div className={`${styles.box}`}>
         {selected === "terminal" ? (
-          <div className={styles.box} key={1}>
+          <div className={styles.terminal_box}>
             <Terminal
               className={styles.terminal}
               colorMode={colorMode}
-              height={"600px"}
               // height={"100%"}
+              height={"600px"}
               // onInput={onInput}
               redBtnCallback={redBtnClick}
               yellowBtnCallback={yellowBtnClick}
@@ -159,7 +159,7 @@ function Manager({ colorMode, lineData, plan }) {
             >
               {lineData}
             </Terminal>
-          </div>
+            </div>
         ) : null}
 
         {selected === "code_editor" ? (

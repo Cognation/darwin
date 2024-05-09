@@ -109,8 +109,7 @@ function Navbar() {
 
       const data = JSON.parse(res_text);
 
-      // console.log("Create project res : ", data.project_id);
-      // console.log("Create project res : ", data.project_name);
+      console.log("Create project res : ", data.project_name);
 
       setselectedProject(data.project_name);
       getprojects();

@@ -1,4 +1,4 @@
-.planner{
+.planner {
     width: calc(100% - 3px);
     height: calc(100% - 5px);
     border-radius: 10px;
@@ -7,7 +7,23 @@
     overflow: scroll;
 }
 
-.light{
+.planner::-webkit-scrollbar {
+    display: none;
+}
+
+
+.light::-webkit-scrollbar {
+    display: none;
+}
+
+
+.darkmode::-webkit-scrollbar {
+    display: none;
+}
+
+
+
+.light {
     border: 1px solid rgb(101, 101, 101);
 }
 
@@ -16,15 +32,15 @@
     margin: 10px 10px;
     font-size: 18px;
     word-wrap: break-word;
-  }
-  
-  
-  .messageContainer::-webkit-scrollbar {
-  display: none;
-  }
+}
 
 
-.darkmode{
+.messageContainer::-webkit-scrollbar {
+    display: none;
+}
+
+
+.darkmode {
     color: white;
     background-color: rgb(32, 32, 32);
 }

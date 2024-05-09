@@ -64,11 +64,11 @@ display: none;
 }
 
 .user {
-  background-color: #d6fcd6;
+  background-color: #acacac;
 }
 
 .bot {
-  background-color: #e5f2b1;
+  background-color: rgb(127, 127, 127);
 }
 .userdarkmode {
   background-color: #868585;

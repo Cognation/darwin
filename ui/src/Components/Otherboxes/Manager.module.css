@@ -91,6 +91,12 @@ body{
     flex-direction: column;
     min-width: 50%;
   }
+
+  .terminal_box{
+    height: 100%;
+    border: 1px solid black;
+    overflow: auto;
+  }
   
   .screenshot {
     border: 1px solid #ccc;

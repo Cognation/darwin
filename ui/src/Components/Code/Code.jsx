@@ -79,6 +79,7 @@ const Code = () => {
     msgs.push({ text: message, sender: "user" });
     setMessages(msgs);
     let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
+    setLineData(ld);
     let codee = "";
 
     console.log(selectedProject);
@@ -134,11 +135,20 @@ const Code = () => {
         }
 
         if (data?.console) {
+          let ld = lineData;
           ld.push(<TerminalInput>{data?.console}</TerminalInput>);
-          ld.push(<TerminalInput>{`\n`}</TerminalInput>);
+          ld.push(<TerminalInput>{`\n\n`}</TerminalInput>);
+          ld.push(<TerminalOutput>$ ⎕</TerminalOutput>);
+          
           setLineData(ld);
         }
       }
+
+      setTimeout(() => {
+        let ld = lineData;
+          ld.push(<TerminalInput>{`\n\n\n\n\n\n\n\n\n\n`}</TerminalInput>);
+          setLineData(ld);
+      }, 1000);
 
       // const res_json = JSON.parse(res_text);
 

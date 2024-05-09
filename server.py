@@ -193,7 +193,7 @@ async def delete_project(request: Request):
             return {"message": "Project deleted successfully"}
     return {"message": "Project not found"}
     
-@app.post("/get_project_names") # returns key value pairs of id and project name
+@app.get("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
     for key in db.getall():

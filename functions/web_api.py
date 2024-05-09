@@ -207,23 +207,23 @@ def web_search(query,relevanceSort=False):
         for i in range(len(bi_encoder_searched_passages)):
             supporting_texts += "Supporting Text "+str(i+1)+": "+str(bi_encoder_searched_passages[i])+"\n"
     # print(supporting_texts)
-    UrlWrtRank = {}
-    k = 0
-    for i in range(len(bi_encoder_searched_passages)):
-        for url, value in DataWrtUrls.items():
-            string = str(value)
-            if k == 7:
-                break
-            if string.find(str(bi_encoder_searched_passages[i]))!=-1:
-                UrlWrtRank[k]=url
-                k += 1
-            if string.find(str(bi_encoder_searched_passages[i]))==-1:
-                UrlWrtRank[k]=url
-                k += 1
+    # UrlWrtRank = {}
+    # k = 0
+    # for i in range(len(bi_encoder_searched_passages)):
+    #     for url, value in DataWrtUrls.items():
+    #         string = str(value)
+    #         if k == 7:
+    #             break
+    #         if string.find(str(bi_encoder_searched_passages[i]))!=-1:
+    #             UrlWrtRank[k]=url
+    #             k += 1
+    #         if string.find(str(bi_encoder_searched_passages[i]))==-1:
+    #             UrlWrtRank[k]=url
+    #             k += 1
     completion = client.chat.completions.create(
         model="gpt-4-0125-preview",
         messages=[{"role": "system", "content": "You are a helpful Research Assistant. Your job is to provide your boss with the most relevannt information in a report format. If present, format code snippets within ''' ''' triple quotes."},
-    {"role": "user", "content": "Generate answer to the question: "+str(question)+"\n\nSupporting Texts\n"+str(supporting_texts)+"\n\nURL sources:"+str(UrlWrtRank)}])
+    {"role": "user", "content": "Generate answer to the question: "+str(question)+"\n\nSupporting Texts\n"+str(supporting_texts)}])
     output=completion.choices[0].message.content
     # print(output)
     return {"message" : output}

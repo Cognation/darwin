@@ -153,46 +153,30 @@ def web_search(query,relevanceSort=False):
     passages=[]
     time_for_scraping = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        for url in urls:
-            executor.submit(scraper,url,con,DataWrtUrls,passages)
+        # Submitting tasks and collecting futures
+        futures = {executor.submit(scraper, url, con, DataWrtUrls, passages): url for url in urls}
+        
+        # Processing the results as tasks complete
+        for future in concurrent.futures.as_completed(futures):
+            url = futures[future]
+            try:
+                result = future.result()
+                # Process result here, e.g., logging or saving the scraped data
+            except Exception as exc:
+                print(f'URL {url} generated an exception: {exc}')
     #print("Passages=",passages)
     print("time for scraping: ",time.time()-time_for_scraping)
     passages2 = []
     i = 0
     try:
-        i=0
-        for x in range(1,12):
-            i = i
-            Z = ""
+        while i < len(passages):
             P = ""
-            while len(Z) <=80:
-                P += (passages[i])
-                Z = P.split()
-                i+=1
-            passages2.append(P)
-    except: 
-        try:
-            i=0
-            for x in range(1,8):
-                i = i
-                Z = ""
-                P = ""
-                while len(Z) <=80:
-                    P += (passages[i])
-                    Z = P.split()
-                    i+=1
-                passages2.append(P)
-        except:
-            i=0
-            for x in range(1,2):
-                i = i
-                Z = ""
-                P = ""
-                while len(Z) <=80:
-                    P += (passages[i])
-                    Z = P.split()
-                    i+=1
-                passages2.append(P)
+            while len(P.split()) <= 80 and i < len(passages):
+                P += (passages[i] + " ")
+                i += 1
+            passages2.append(P.strip())
+    except Exception as exc:
+        print(f"Error processing passages: {exc}")
     end  = time.time() - start
     
     start = time.time()

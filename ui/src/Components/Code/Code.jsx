@@ -28,6 +28,8 @@ const Code = () => {
     theme,
     editor_expanded,
     setEditor_expanded,
+    plan,
+    setplan
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
@@ -36,7 +38,6 @@ const Code = () => {
   const [input_msg, setinput_msg] = useState("");
   const [istyping, setistyping] = useState(false);
   const [selected_file, setselected_file] = useState(null);
-  const [plan, setplan] = useState([]);
   const [selected_file_language, setselected_file_language] = useState(
     selected_file?.language || "python"
   );
@@ -76,6 +77,7 @@ const Code = () => {
     setistyping(true);
     let msgs = messages;
     msgs.push({ text: message, sender: "user" });
+    setMessages(msgs);
     let codee = "";
 
     console.log(selectedProject);
@@ -87,49 +89,83 @@ const Code = () => {
     try {
       const res_text = await getCode(formData);
 
-      console.log("Response : ", res_text);
-
+      
       if (!res_text) {
         alert("Some error occured");
         return;
       }
+      
+      console.log("Response : ", res_text);
+      
+      const reader = res_text.body.getReader();
+      const decoder = new TextDecoder("utf-8");
 
-      const res_json = JSON.parse(res_text);
+      while (true && reader && decoder) {
+        const { done, value } = await reader.read();
+        if (done) {
+          console.log("Done");
+          setistyping(false);
+          break;
+        }
 
-      setistyping(false);
+        const chunk = decoder.decode(value, { stream: true });
 
-      console.log("Res : ", res_json);
+        console.log("Line : ", chunk);
 
-      msgs.push({ text: res_json?.summary, sender: "bot" });
-      setMessages(msgs);
-      console.log("Msg : ", res_json?.summary);
-      // }
+        const data = JSON.parse(chunk);
 
-      let c = "";
-      let o = "";
+        console.log("Data : ", data);
 
-      if (
-        res_json &&
-        res_json?.coder_response &&
-        res_json?.coder_response.length > 0
-      ) {
-        for (const item of res_json?.coder_response) {
-          if (item?.output) {
-            o = item?.output + "\n";
-          }
-          if(item?.message){
-            setplan(item?.message);
-          }
+        if (data?.summary_text) {
+          msgs.push({ text: data?.summary_text, sender: "bot" });
+          setMessages(msgs);
+        }
+
+        if (data?.message) {
+          let pl = plan;
+          pl.push(`${data?.message}`);
+          pl.push(`\n`);
+          pl.push(`\n`);
+          setplan(pl);
         }
       }
 
-      setcode(c);
 
-      let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
-      ld.push(<TerminalInput>{o}</TerminalInput>);
-      setLineData(ld);
-      console.log("Output : ", o);
+      // const res_json = JSON.parse(res_text);
 
+      // setistyping(false);
+
+      // console.log("Res : ", res_json);
+
+      // msgs.push({ text: res_json?.summary, sender: "bot" });
+      // setMessages(msgs);
+      // console.log("Msg : ", res_json?.summary);
+      // // }
+
+      // let c = "";
+      // let o = "";
+
+      // if (
+      //   res_json &&
+      //   res_json?.coder_response &&
+      //   res_json?.coder_response.length > 0
+      // ) {
+      //   for (const item of res_json?.coder_response) {
+      //     if (item?.output) {
+      //       o = item?.output + "\n";
+      //     }
+      //     if(item?.message){
+      //       setplan(item?.message);
+      //     }
+      //   }
+      // }
+
+      // setcode(c);
+
+      // let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
+      // ld.push(<TerminalInput>{o}</TerminalInput>);
+      // setLineData(ld);
+      // console.log("Output : ", o);
     } catch (err) {
       console.log(err);
       setistyping(false);

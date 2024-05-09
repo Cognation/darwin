@@ -92,7 +92,7 @@ class Coder():
                             break
                     temp += str(chunk["content"])
         # print("Message : ",messages)
-        self.interpreter.chat(f"Write this code in a new file that does not already exist in the {self.path} directory. Use proper formatting and no '\n's")
+        self.interpreter.chat(f"Write this code in a new file that does not already exist in the {self.path} directory via with open. Use proper formatting and no '\n's")
         self.save_history()
         self.summary = self.generate_summary(self.parse_output(messages))
 

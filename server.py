@@ -61,7 +61,7 @@ def get_db(project_name):
 # Constants
 MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
 MAX_TOKENS = 10000
-TEMPERATURE = 0.2
+TEMPERATURE = 0
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):
@@ -217,6 +217,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     original_query = customer_message
     global history
     history = get_db(project_name)
+    history.append({"user_query":original_query})
     return StreamingResponse(chatGPT(project_name,original_query))
 
 
@@ -226,10 +227,11 @@ def chatGPT(project_name,original_query):
     global StateOfMind
     history_string = ""
     for obj in history:
-        history_string += f"User: {obj['user_query']}\n" if obj['user_query'] else ""
-        history_string += f"AI_Summary: {obj['summary']}\n" if obj['summary'] else ""
-        history_string += f"AI_Coder: {obj['coder_response']}\n" if obj['coder_response'] else "" 
-        history_string += f"Web_search: {obj['web_search_response']}\n" if obj['web_search_response'] else ""
+        history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
+        history_string += f"AI_Coder_Message: {obj['message']}\n" if "message" in obj else ""
+        history_string += f"AI_Coder_Code: {obj['code']}\n" if "code" in obj else ""
+        history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
+        history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
     while(True):
         prompt = process_assistant_data(original_query,StateOfMind)
         print("history" ,history_string)
@@ -272,7 +274,8 @@ def chatGPT(project_name,original_query):
                     out = json.dumps({"web_search":str(response)})
                     yield out.encode("utf-8") + b"\n"
                     update_db(project_name,{"web_search":str(response)})
-                    StateOfMind = "Browsed the web and retrieved relevant information. Call the coder."
+                    web_search_response = response
+                    StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function next."
                 
                 elif func == "summary_text":
                     response = (parameter['message'])
@@ -302,7 +305,12 @@ def chatGPT(project_name,original_query):
 # start the server
 if __name__ == "__main__":
     import uvicorn
+    from dotenv import load_dotenv
+
     load_dotenv()
-    print(os.environ["OPENAI_API_KEY"])
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    os.environ["OPENAI_API_KEY"] = openai_api_key
+    print("OpenAI API Key:", openai_api_key)
     openai = OpenAI(api_key=openai_api_key)
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

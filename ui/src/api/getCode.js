@@ -9,7 +9,7 @@ export const getCode = async (formData) => {
       body: formData,
     });
 
-    const res_text = await backend_res.text();
+    const res_text = backend_res;
     return res_text;
   } catch (err) {
     console.error(err);

@@ -158,10 +158,11 @@ def process_assistant_data(original_query,StateOfMind):
     Remember:
     - You can only call one function at a time.
     - Avoid redundant calls by only invoking functions when necessary.
-    - Always keep all functions within ```[ ]```
+    - Always keep all functions within ``` ``` and enclosed in a list as shown in the example above.
     - Follow the function call exactly as shown in the example above.
     - You can only communicate with the user through the functions provided.
     - After receiving a "State Of Mind" response with constructive conclusions, proceed to call the "summary_text" function.
+    - You should include links from the original query in the web_search function query to provide additional information.
 
     ORIGINAL QUERY:
     {original_query}
@@ -169,6 +170,8 @@ def process_assistant_data(original_query,StateOfMind):
     Current STATE OF MIND:
     {StateOfMind}
     
+    VERY IMPORTANT : If the STATE OF MIND justifies the ORIGINAL QUERY, call the "summary_text" function to conclude the conversation.
+    Skipping any of the instructions will lead to a penalty
     """
 
     return system_prompt

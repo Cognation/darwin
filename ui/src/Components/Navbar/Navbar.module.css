@@ -332,6 +332,9 @@
       
       .options {
         position: absolute;
+        max-height: 50vh;
+        overflow-y: scroll;
+        overflow-x: hidden;
         top: 105%;
         margin-top: 20px;
         left: 0;
@@ -343,7 +346,6 @@
         padding: 0;
         margin: 0;
         width: 100%;
-        overflow: hidden;
       }
       
       .options li {

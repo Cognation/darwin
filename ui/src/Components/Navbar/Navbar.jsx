@@ -17,10 +17,12 @@ function Navbar() {
     setMessages,
     theme,
     setFiles,
+    setplan
   } = useZustandStore();
 
   useEffect(() => {
     setFiles([]);
+    setplan([]);
   }, [selectedProject]);
 
   useEffect(() => {
@@ -58,14 +60,17 @@ function Navbar() {
 
       for (const item of chat_history) {
         console.log("Item : ", item);
-        msgs.push({
-          text: item?.user_query,
-          sender: "user",
-        });
-        msgs.push({
-          text: item?.summary,
-          sender: "bot",
-        });
+
+        if (item?.summary_text) {
+          msgs.push({
+            text: item?.user_query,
+            sender: "user",
+          });
+        }
+
+        if (item?.summary_text) {
+          msgs.push({ text: item?.summary_text, sender: "bot" });
+        }
       }
       setMessages(msgs);
     } catch (err) {

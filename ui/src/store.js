@@ -14,6 +14,7 @@ export const useZustandStore = create()((set) => ({
   expandedNodes : {},
   selected_file : null,
   selected_file_language : "python",
+  plan : [],
   setMessages: (newchat) => set({ messages : newchat }),
   setselected: (newselected) => set({ selected : newselected }),
   setselectedProject : (prvproject) => set({ selectedProject : prvproject }),
@@ -24,4 +25,5 @@ export const useZustandStore = create()((set) => ({
   setEditor_expanded : (newwidth) => set({ editor_expanded : newwidth }),
   setselected_file : (newfile) => set({ selected_file : newfile }),
   setselected_file_language : (newlang) => set({ selected_file_language : newlang }),
+  setplan : (newplan) => set({ plan : newplan }),
 }));

@@ -29,7 +29,7 @@ const Code = () => {
     editor_expanded,
     setEditor_expanded,
     plan,
-    setplan
+    setplan,
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
@@ -89,14 +89,13 @@ const Code = () => {
     try {
       const res_text = await getCode(formData);
 
-      
       if (!res_text) {
         alert("Some error occured");
         return;
       }
-      
+
       console.log("Response : ", res_text);
-      
+
       const reader = res_text.body.getReader();
       const decoder = new TextDecoder("utf-8");
 
@@ -128,8 +127,13 @@ const Code = () => {
           pl.push(`\n`);
           setplan(pl);
         }
-      }
 
+        if (data?.console) {
+          let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
+          ld.push(<TerminalInput>{data?.console}</TerminalInput>);
+          setLineData(ld);
+        }
+      }
 
       // const res_json = JSON.parse(res_text);
 

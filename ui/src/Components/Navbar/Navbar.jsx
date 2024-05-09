@@ -61,7 +61,7 @@ function Navbar() {
       for (const item of chat_history) {
         console.log("Item : ", item);
 
-        if (item?.summary_text) {
+        if (item?.user_query) {
           msgs.push({
             text: item?.user_query,
             sender: "user",

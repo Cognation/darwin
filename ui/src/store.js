@@ -5,7 +5,7 @@ export const useZustandStore = create()((set) => ({
   messages : [],
   selectedProject : null,
   selectedProject_id : null,
-  selected : "terminal",
+  selected : "planner",
   projectList : [],
   files : [],
   theme : "System",

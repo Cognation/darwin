@@ -100,10 +100,10 @@ class Coder():
         response = {"code":[], "output":[], "message":[]} # code, console, message
         for message in messages:
             try:
-                if message["type"] == "code":
-                    response["code"].append(message["content"])
-                if message["type"] == "console":
-                    response["output"].append(message["content"])
+                # if message["type"] == "code":
+                #     response["code"].append(message["content"])
+                # if message["type"] == "console":
+                #     response["output"].append(message["content"])
                 if message["type"] == "message":
                     response["message"].append(message["content"])
             except:
@@ -125,7 +125,7 @@ class Coder():
         Write in plain text.
         """
         summary = self.openai.chat.completions.create(
-            model = "gpt-3.5-turbo",
+            model = "gpt-4-turbo",
             messages = [
                 {"role": "system", "content": prompt}
             ],

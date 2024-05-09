@@ -78,6 +78,7 @@ const Code = () => {
     let msgs = messages;
     msgs.push({ text: message, sender: "user" });
     setMessages(msgs);
+    let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
     let codee = "";
 
     console.log(selectedProject);
@@ -90,7 +91,7 @@ const Code = () => {
       const res_text = await getCode(formData);
 
       if (!res_text) {
-        alert("Some error occured");
+        console.log("Error in backend.");
         return;
       }
 
@@ -122,15 +123,19 @@ const Code = () => {
 
         if (data?.message) {
           let pl = plan;
-          pl.push(`${data?.message}`);
-          pl.push(`\n`);
-          pl.push(`\n`);
+          pl.push(`${data?.message}\n\n`);
+          setplan(pl);
+        }
+
+        if (data?.web_search) {
+          let pl = plan;
+          pl.push(`${data?.web_search}\n\n`);
           setplan(pl);
         }
 
         if (data?.console) {
-          let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
           ld.push(<TerminalInput>{data?.console}</TerminalInput>);
+          ld.push(<TerminalInput>{`\n`}</TerminalInput>);
           setLineData(ld);
         }
       }
@@ -173,7 +178,7 @@ const Code = () => {
     } catch (err) {
       console.log(err);
       setistyping(false);
-      alert("Please try again.");
+      console.log("Please try again.");
       return;
     }
   };

@@ -14,7 +14,6 @@ function Planner({plan=["Plan of execution will be displayed here!!"]}) {
                 plan.length > 0 &&
                 plan.map((message, index) => {
                   const texts = message?.split("\n");
-                  console.log("Text : " , JSON.stringify(texts));
                   return (
                     <div key={index + 11}>
                       <div

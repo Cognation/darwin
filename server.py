@@ -193,7 +193,7 @@ async def delete_project(request: Request):
             return {"message": "Project deleted successfully"}
     return {"message": "Project not found"}
     
-@app.get("/get_project_names") # returns key value pairs of id and project name
+@app.post("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
     for key in db.getall():
@@ -281,9 +281,9 @@ def chatGPT(project_name,original_query):
                     response = (web_search(parameter['query']))
                     out = json.dumps({"web_search":str(response)})
                     yield out.encode("utf-8") + b"\n"
-                    update_db(project_name,{"web_search":str(response["message"])})
+                    update_db(project_name,{"web_search":str(response)})
                     web_search_response = response
-                    StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function next."
+                    StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function or return to user."
                 
                 elif func == "summary_text":
                     response = (parameter['message'])

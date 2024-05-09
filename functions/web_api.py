@@ -226,7 +226,7 @@ def web_search(query,relevanceSort=False):
     {"role": "user", "content": "Generate answer to the question: "+str(question)+"\n\nSupporting Texts\n"+str(supporting_texts)}])
     output=completion.choices[0].message.content
     # print(output)
-    return {"message" : output}
+    return output
             
             
 if __name__ == "__main__":

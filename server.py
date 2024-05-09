@@ -214,8 +214,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     project_name = data.get("project_name")
     customer_message = data.get("customer_message")
     global StateOfMind 
-    if(StateOfMind == ""):
-        StateOfMind = customer_message
+    StateOfMind = customer_message
     original_query = customer_message
     global history
     history = get_db(project_name)
@@ -282,7 +281,7 @@ def chatGPT(project_name,original_query):
                     response = (web_search(parameter['query']))
                     out = json.dumps({"web_search":str(response)})
                     yield out.encode("utf-8") + b"\n"
-                    update_db(project_name,{"web_search":str(response)})
+                    update_db(project_name,{"web_search":str(response["message"])})
                     web_search_response = response
                     StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function next."
                 

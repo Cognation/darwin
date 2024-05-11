@@ -2,7 +2,7 @@ export const fetch_projects = async () => {
   const projects = await fetch(
     `${process.env.REACT_APP_BACKEND}/get_project_names`,
     {
-      method: "GET",
+      method: "POST",
       headers: {
         Accept: "application/json",
         type: "formData",

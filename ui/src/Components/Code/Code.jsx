@@ -28,8 +28,6 @@ const Code = () => {
     theme,
     editor_expanded,
     setEditor_expanded,
-    plan,
-    setplan,
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
@@ -38,6 +36,7 @@ const Code = () => {
   const [input_msg, setinput_msg] = useState("");
   const [istyping, setistyping] = useState(false);
   const [selected_file, setselected_file] = useState(null);
+  const [plan, setplan] = useState("");
   const [selected_file_language, setselected_file_language] = useState(
     selected_file?.language || "python"
   );
@@ -49,6 +48,10 @@ const Code = () => {
   }, [selected_file, selectedProject]);
 
   const inputref = useRef(null);
+
+  useEffect(()=>{
+    setplan("");
+  } , [selectedProject]);
 
   useEffect(() => {
     inputref?.current?.focus();
@@ -81,6 +84,9 @@ const Code = () => {
     let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
     setLineData(ld);
     let codee = "";
+    setplan("");
+
+    let pl = "";
 
     console.log(selectedProject);
 
@@ -122,15 +128,19 @@ const Code = () => {
           }
 
           if (data?.message) {
-            let pl = plan;
-            pl +=  `${data?.message}\n\n`;
+            pl = pl + `\n\n ${data?.message}`;
             // pl.push(`${data?.message}\n\n`);
             setplan(pl);
           }
 
           if (data?.web_search) {
-            let pl = plan;
-            pl += `${data?.web_search}\n\n`;
+            pl = pl + `\n\n ${data?.web_search}`;
+            // pl.push(`${data?.web_search}\n\n`);
+            setplan(pl);
+          }
+
+          if (data?.getIssueSummary) {
+            pl = pl + `\n\n ${data?.getIssueSummary}`;
             // pl.push(`${data?.web_search}\n\n`);
             setplan(pl);
           }

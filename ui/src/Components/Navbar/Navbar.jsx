@@ -22,7 +22,7 @@ function Navbar() {
 
   useEffect(() => {
     setFiles([]);
-    setplan([]);
+    setplan("");
   }, [selectedProject]);
 
   useEffect(() => {

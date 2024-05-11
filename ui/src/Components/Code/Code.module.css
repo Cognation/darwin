@@ -67,6 +67,10 @@ display: none;
   background-color: #acacac;
 }
 
+.agent{
+  margin: 10px 0px 10px 2vw;
+}
+
 .bot {
   background-color: rgb(127, 127, 127);
 }

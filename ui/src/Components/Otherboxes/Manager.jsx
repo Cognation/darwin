@@ -151,7 +151,7 @@ function Manager({ colorMode, lineData, plan }) {
               className={styles.terminal}
               colorMode={colorMode}
               // height={"100%"}
-              height={"600px"}
+              height={"90vh"}
               // onInput={onInput}
               redBtnCallback={redBtnClick}
               yellowBtnCallback={yellowBtnClick}

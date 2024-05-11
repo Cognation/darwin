@@ -1,15 +1,18 @@
-import React from 'react'
-import styles from './Planner.module.css';
+import React from "react";
+import styles from "./Planner.module.css";
 import { useZustandStore } from "../../store";
+import Markdown from "react-markdown";
 
-function Planner({plan=["Plan of execution will be displayed here!!"]}) {
-
+function Planner({ plan = ["Plan of execution will be displayed here!!"] }) {
   const { theme } = useZustandStore();
 
-
   return (
-    <div className={`${styles.planner} ${theme==="Dark" ? styles.darkmode : styles.light}`}>
-      <div className={`${styles.messageContainer}`}>
+    <div
+      className={`${styles.planner} ${
+        theme === "Dark" ? styles.darkmode : styles.light
+      }`}
+    >
+      {/* <div className={`${styles.messageContainer}`}>
               {plan &&
                 plan.length > 0 &&
                 plan.map((message, index) => {
@@ -122,9 +125,13 @@ function Planner({plan=["Plan of execution will be displayed here!!"]}) {
                     </div>
                   );
                 })}
-            </div>
+            </div> */}
+
+      <div className={`${styles.messageContainer}`}>
+        { plan && plan.length>0 && <Markdown>{plan}</Markdown>}
+      </div>
     </div>
-  )
+  );
 }
 
-export default Planner
+export default Planner;

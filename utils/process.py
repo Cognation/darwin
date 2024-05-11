@@ -120,7 +120,7 @@ function_call_example = """
     {
         "function_name": "getIssueSummary",
         "function_parameters": {
-            "statement": "Can you tell me more about the issue number 1167 from the repo gpt-neox from EleutherAI?"
+            "statement": "Can you tell me more about the issue number 1167 from the repo EleutherAI/gpt-neox?"
         }
     }
 ]
@@ -162,9 +162,12 @@ def process_assistant_data(original_query,StateOfMind,iter):
     - Follow the function call exactly as shown in the example above.
     - You can only communicate with the user through the functions provided.
     - You should include links from the original query in the web_search function query to provide additional information.
-    - IMP: After receiving a "State Of Mind" response with some actions and conclusions, proceed to call the "summary_text" function.
-    
+    - The original query is the user's initial query and the State of Mind is the result of the previous function call that you made.
+        
     Skipping any of the above instructions will lead to a penalty
+
+    Original Query:
+    {original_query}
 
     Current STATE OF MIND:
     {StateOfMind}

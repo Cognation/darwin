@@ -22,7 +22,6 @@ from functions.coder import *
 from functions.web_api import *
 from functions.call_function import function_dict
 from functions.extract_web_links import extract_links, scrape_pdf
-from functions.issues import issueHelper
 import copy
 import traceback
 
@@ -37,6 +36,7 @@ history = ""
 StateOfMind = ""
 cc = 0
 iter = 0
+prevcoder = False
 
 # Enable CORS for all routes
 origins = ["*"]
@@ -217,6 +217,8 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     StateOfMind = customer_message
     original_query = customer_message
     global history
+    global prevcoder
+    prevcoder = False
     history = get_db(project_name)
     history.append({"user_query":original_query})
     update_db(project_name,{"user_query":original_query})
@@ -229,6 +231,8 @@ def chatGPT(project_name,original_query):
     global StateOfMind
     global cc
     global iter
+    global prevcoder
+    prevcoder = False
     history_string = ""
     for obj in history:
         history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
@@ -265,6 +269,10 @@ def chatGPT(project_name,original_query):
             print(parameter)
             try:
                 if func == "coder":
+                    if prevcoder:
+                        out = json.dumps({"summary_text":"Is there anything else you would like to know?"})
+                        yield out.encode("utf-8") + b"\n"
+                        break
                     query = parameter['query']
                     coder = Coder(project_name)
                     for chunk in coder.code(query,web_search_response):
@@ -273,11 +281,13 @@ def chatGPT(project_name,original_query):
                         yield chunk
                         update_db(project_name,json.loads(chunk))
                     StateOfMind = "The coder function took the following steps :\n" + coder.summary
+                    prevcoder = True
                     cc+=1
                     if cc >= 2:
-                        StateOfMind = "NOW CALL THE summary_text FUNCTION!"
+                        StateOfMind = "Coder call finished. Call the summary_text function!"
                     
                 elif func == "web_search":
+                    prevcoder = False
                     response = (web_search(parameter['query']))
                     out = json.dumps({"web_search":str(response)})
                     yield out.encode("utf-8") + b"\n"
@@ -286,6 +296,7 @@ def chatGPT(project_name,original_query):
                     StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function or return to user."
                 
                 elif func == "summary_text":
+                    prevcoder = False
                     response = (parameter['message'])
                     # check for ` in response and remove it
                     response = response.replace("`","")
@@ -298,11 +309,14 @@ def chatGPT(project_name,original_query):
                     break
 
                 elif func == "getIssueSummary":
+                    from functions.issues import issueHelper
+                    prevcoder = False
                     statement = parameter['statement']
                     issue_helper = issueHelper(project_name)
                     issue_summary = issue_helper.getIssueSummary(statement)
-                    StateOfMind = "I have extracted the Issue details as follows : " + issue_summary
-                    yield {"getIssueSummary":issue_summary}
+                    StateOfMind = "The issue details have been extracted as follows : \n" + issue_summary + "\n\n NOTE : Call the summary_text function to answer user's query or Coder function to solve the issue."
+                    out = json.dumps({"getIssueSummary":issue_summary})
+                    yield out.encode("utf-8") + b"\n"
                     update_db(project_name,{"getIssueSummary":issue_summary})
             except Exception as e:  
                 print(f"Error calling the function {func} with parameters {parameter}: {e}")

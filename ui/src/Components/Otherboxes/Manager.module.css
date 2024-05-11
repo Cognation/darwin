@@ -142,9 +142,24 @@ body{
     display: flex;
     list-style: none;
     background-color: rgb(133, 132, 132);
-    padding-top: 5px;
+    padding: 3px 0px;
     margin: 0;
     border-radius: 10px;
+    height: fit-content;
+    overflow: auto;
+  }
+
+  @media (max-width: 1095px) {
+    .ul{
+      display: flex;
+      list-style: none;
+      background-color: rgb(133, 132, 132);
+      padding: 10px 0px 10px 0px;
+      margin: 0;
+      border-radius: 10px;
+      height: fit-content;
+      overflow: auto;
+    }
   }
   
   .li{
@@ -153,8 +168,9 @@ body{
     height: 20px;
     width: fit-content;
     cursor: pointer;
-    overflow-x: auto;
     font-weight: 600;
+    display: flex;
+    align-items: center;
   }
   
   .li img{

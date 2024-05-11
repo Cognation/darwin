@@ -40,16 +40,20 @@ class issueHelper():
             temperature=0.5
         )
         response = response.choices[0].message.content
+        # print("Response : ",response)
         response_json = self.parse_response(response)
-
+        # print("Response JSON : ",response_json)
         repo = response_json["repo"]
         issue_number = response_json["issue_number"]
-
+        # print("Repo : ",repo)
+        # print("Issue Number : ",issue_number)
         self.issue = subprocess.run(["gh", "issue", "--repo", repo, "view", str(issue_number)],capture_output=True)
-        self.issue = self.issue.stdout.decode("utf-8")        
+        self.issue = self.issue.stdout.decode("utf-8")    
+        # print("Issue : ",self.issue)    
     
     def getIssueSummary(self,statement): # make param a statement in natural language
         self.getIssue(statement)
+        # print("Issue : ",self.issue)
         self.message.append({"role":"user","content":self.issue})
         self.issue_summary = self.openai.chat.completions.create(
             model = "gpt-4-turbo",
@@ -60,10 +64,10 @@ class issueHelper():
     
 
 if __name__ == "__main__":
-    helper = issueHelper("first")
+    helper = issueHelper("testing10")
     # response = helper.getIssueSummary("Whats the issue here https://github.com/shankerabhigyan/dsa-code/issues/1")
     #response = helper.getIssueSummary("Whats the issue here https://github.com/EleutherAI/gpt-neox/issues/1204 can you help?")
     
-    response = helper.getIssueSummary("Can you tell me more about the issue number 1167 from the repo gpt-neox from EleutherAI?")
-
+    response = helper.getIssueSummary("Can you tell me more about the issue number 86 from the repo pickledb from patx?")
+    #helper.getIssue("tell me about the issue https://github.com/EleutherAI/gpt-neox/issues/1204")
     print(response)

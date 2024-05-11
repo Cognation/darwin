@@ -38,9 +38,10 @@ class Coder():
         else:
             print(f"Directory already exists: {self.path}")
 
-        ci = "Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
+        ci = f"Very Important : Your working directory is {self.path}, no work is to be done outside this folder! . Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
         self.interpreter.custom_instructions = ci + custom_instructions # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
         self.load_history()
+        print("path : ",self.path)
 
     def make_query(self, query, context):
         q = "Based on the following context:\n" + context + "\n\nWrite and execute code for the query:\n" + query
@@ -75,6 +76,11 @@ class Coder():
             if 'start' in chunk:
                 key = chunk["type"]
             elif 'end' in chunk:
+                if(key=="code"):
+                    content = temp
+                    # append to file code.py
+                    with open(os.path.join(self.path, "code.py"), "a") as f:
+                        f.write(content)
                 yield json.dumps({key:temp}).encode("utf-8") + b"\n"
                 temp = ""
             else:
@@ -92,7 +98,7 @@ class Coder():
                             break
                     temp += str(chunk["content"])
         # print("Message : ",messages)
-        self.interpreter.chat(f"Write this code in a new file that does not already exist in the {self.path} directory via with open. Use proper formatting and no '\n's")
+        self.interpreter.chat(f"Write this code in a new file that does not already exist in the {self.path} directory with open. Use proper formatting and no '\n's")
         self.save_history()
         self.summary = self.generate_summary(self.parse_output(messages))
 

@@ -92,7 +92,7 @@ const Code = () => {
       const res_text = await getCode(formData);
 
       if (!res_text) {
-        console.log("Error in backend.");
+        alert("Error in backend.");
         return;
       }
 
@@ -113,82 +113,48 @@ const Code = () => {
 
         console.log("Line : ", chunk);
 
-        const data = JSON.parse(chunk);
+        try {
+          const data = JSON.parse(chunk);
 
-        console.log("Data : ", data);
+          if (data?.summary_text) {
+            msgs.push({ text: data?.summary_text, sender: "bot" });
+            setMessages(msgs);
+          }
 
-        if (data?.summary_text) {
-          msgs.push({ text: data?.summary_text, sender: "bot" });
-          setMessages(msgs);
+          if (data?.message) {
+            let pl = plan;
+            pl +=  `${data?.message}\n\n`;
+            // pl.push(`${data?.message}\n\n`);
+            setplan(pl);
+          }
+
+          if (data?.web_search) {
+            let pl = plan;
+            pl += `${data?.web_search}\n\n`;
+            // pl.push(`${data?.web_search}\n\n`);
+            setplan(pl);
+          }
+
+          if (data?.console) {
+            let ld = lineData;
+            ld.push(<TerminalInput>{data?.console}</TerminalInput>);
+            ld.push(<TerminalInput>{`\n\n`}</TerminalInput>);
+            setLineData(ld);
+          }
+        } catch (err) {
+          console.error("Error in parsing the content.");
         }
 
-        if (data?.message) {
-          let pl = plan;
-          pl.push(`${data?.message}\n\n`);
-          setplan(pl);
-        }
-
-        if (data?.web_search) {
-          let pl = plan;
-          pl.push(`${data?.web_search}\n\n`);
-          setplan(pl);
-        }
-
-        if (data?.console) {
-          let ld = lineData;
-          ld.push(<TerminalInput>{data?.console}</TerminalInput>);
-          ld.push(<TerminalInput>{`\n\n`}</TerminalInput>);
-          ld.push(<TerminalOutput>$ ⎕</TerminalOutput>);
-          
-          setLineData(ld);
-        }
+        // setTimeout(() => {
+        //   let ld = lineData;
+        //     ld.push(<TerminalInput>{`\n\n\n\n\n\n\n\n\n\n`}</TerminalInput>);
+        //     setLineData(ld);
+        // }, 1000);
       }
-
-      setTimeout(() => {
-        let ld = lineData;
-          ld.push(<TerminalInput>{`\n\n\n\n\n\n\n\n\n\n`}</TerminalInput>);
-          setLineData(ld);
-      }, 1000);
-
-      // const res_json = JSON.parse(res_text);
-
-      // setistyping(false);
-
-      // console.log("Res : ", res_json);
-
-      // msgs.push({ text: res_json?.summary, sender: "bot" });
-      // setMessages(msgs);
-      // console.log("Msg : ", res_json?.summary);
-      // // }
-
-      // let c = "";
-      // let o = "";
-
-      // if (
-      //   res_json &&
-      //   res_json?.coder_response &&
-      //   res_json?.coder_response.length > 0
-      // ) {
-      //   for (const item of res_json?.coder_response) {
-      //     if (item?.output) {
-      //       o = item?.output + "\n";
-      //     }
-      //     if(item?.message){
-      //       setplan(item?.message);
-      //     }
-      //   }
-      // }
-
-      // setcode(c);
-
-      // let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
-      // ld.push(<TerminalInput>{o}</TerminalInput>);
-      // setLineData(ld);
-      // console.log("Output : ", o);
     } catch (err) {
       console.log(err);
       setistyping(false);
-      console.log("Please try again.");
+      alert("Please try again.");
       return;
     }
   };
@@ -352,7 +318,7 @@ const Code = () => {
                     </div>
                   );
                 })}
-              {!issettingopen && istyping ? (
+              {/* {!issettingopen && istyping ? (
                 <div
                   ref={msgref2}
                   className={`${styles.message} ${styles["bot"]} ${
@@ -363,12 +329,37 @@ const Code = () => {
                 </div>
               ) : (
                 ""
-              )}
+              )} */}
               <div ref={msgref}></div>
               {/* ) : (
             <Setting />
           )} */}
             </div>
+
+            {!issettingopen && !istyping ? (
+              <div
+                ref={msgref2}
+                className={`${styles.agent} ${
+                  theme === "Dark" ? styles.agentdarkmode : null
+                }`}
+              >
+                Agent is offline.
+              </div>
+            ) : (
+              ""
+            )}
+            {!issettingopen && istyping ? (
+              <div
+                ref={msgref2}
+                className={`${styles.agent} ${
+                  theme === "Dark" ? styles.agentdarkmode : null
+                }`}
+              >
+                Agent is online.
+              </div>
+            ) : (
+              ""
+            )}
             <textarea
               type="text"
               ref={inputref}

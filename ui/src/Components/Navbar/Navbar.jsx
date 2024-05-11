@@ -107,9 +107,13 @@ function Navbar() {
 
       const res_text = await backend_res.text();
 
-      const data = JSON.parse(res_text);
+      console.log("Project listttt : " , res_text.includes("message"));
 
-      console.log("Create project res : ", data.project_name);
+      if(res_text.includes("message")){
+        alert("Project alreday exists.");
+      }
+
+      const data = JSON.parse(res_text);
 
       setselectedProject(data.project_name);
       getprojects();

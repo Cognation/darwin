@@ -141,7 +141,7 @@ const FileExplorer = ({ data }) => {
       {selectedProject ? (
         <div className={styles.tree}>{renderNode(data)}</div>
       ) : (
-        <div>Please select an project.</div>
+        <div>Please select a project.</div>
       )}
     </div>
   );

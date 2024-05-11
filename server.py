@@ -5,7 +5,9 @@ from typing import List
 import ast
 from openai import OpenAI
 from fastapi import FastAPI, HTTPException, File, UploadFile, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+import fastapi
 from decouple import config
 from gridfs import GridFS
 from PIL import Image
@@ -20,23 +22,21 @@ from functions.coder import *
 from functions.web_api import *
 from functions.call_function import function_dict
 from functions.extract_web_links import extract_links, scrape_pdf
+import copy
+import traceback
+
 
 # Initialize FastAPI app
 app = FastAPI()
-
-global_state = {
-    "OI_chat": [],
-    "OI_history": [],
-    "project_id": ""
-}
-
-async def update_global_state(key, val):
-    global global_state
-    global_state[key] = val
-
-async def get_global_state(key):
-    global global_state
-    return global_state[key]
+global history
+global web_search_response
+global StateOfMind
+web_search_response = ""
+history = ""
+StateOfMind = ""
+cc = 0
+iter = 0
+prevcoder = False
 
 # Enable CORS for all routes
 origins = ["*"]
@@ -47,37 +47,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# import env
-env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(env_path)
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-## Initialize OpenAI instance
-# openai_api_key = config('OPENAI_API_KEY')
-# os.environ["OPENAI_API_KEY"] = openai_api_key
-openai = OpenAI(api_key=OPENAI_API_KEY)
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-
-# Initialize MongoDB client and database
-# cluster_url = os.getenv('CLUSTER_URL')
-# mongoclient = MongoClient(cluster_url)
-#db = mongoclient.accintia 
-# chatdb = db.documentchat
-# collection = db.parallel
-# file_collection = db.collection
-# file_collection_name = file_collection.name
 
 import pickledb
 db = pickledb.load('./data/data.db', True) 
 
-async def update_db(project_id, key, val):
-    project = db.get(project_id)
-    project[key] = val
-    db.set(project_id, project)
+def update_db(project_name, val):
+    project = db.get(project_name)
+    project.append(val)
+    db.dump()
+    
+def get_db(project_name):
+    project = db.get(project_name)
+    return copy.deepcopy(project)
 
 # Constants
-MODEL_NAME =  "gpt-4-0125-preview"  # config('MODEL_NAME')
-MAX_TOKENS = 150
-TEMPERATURE = 0.7
+MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
+MAX_TOKENS = 10000
+TEMPERATURE = 0
 
 def convert_bytes_to_original_format(file_bytes, mime_type, save_path):
     if mime_type.startswith('text'):
@@ -132,193 +118,223 @@ def retrieve_file_from_mongodb(file_id, collection_name):
     return file_data.read(), mime_type
 
 
+def get_folder_structure(dir_path,parent=""):
+    is_directory = os.path.isdir(dir_path)
+    name = os.path.basename(dir_path)
+    relative_path = os.path.relpath(dir_path, os.path.dirname(dir_path))
+
+    directory_object = {
+        'parent': os.path.dirname(dir_path),
+        'path': relative_path,
+        'name': name,
+        'type': 'directory' if is_directory else 'file',
+    }
+
+    if is_directory:
+        children = []
+        for child in os.listdir(dir_path):
+            child_path = os.path.join(dir_path, child)
+            children.append(get_folder_structure(child_path,parent=dir_path))
+        directory_object['children'] = children
+
+    return directory_object
+
+
+@app.post("/serve_file")
+async def serve_file(request: Request):
+    data = await request.form()
+    filePath = data["path"]
+    # serve file using fastapi FileResponse
+    pwd = os.path.join(os.getcwd(), 'data')
+    path = os.path.join(pwd, filePath)
+    return fastapi.responses.FileResponse(path)
+
+@app.post("/folder_structure")
+async def folder_structure(request:Request):
+    data = await request.form()
+    root_dir = data["root_dir"]
+    structure = get_folder_structure(root_dir)
+    return structure
+
+@app.get("/get_file")
+async def get_file(request: Request):
+    data = await request.form()
+    path = data["path"]
+    with open(path, "rb") as file:
+        file_bytes = file.read()
+    return file_bytes
+
 @app.post("/create_project") # creates a new project and updates the global state with the project data
 async def create_project(request: Request):
     data = await request.form()
     project_name = data.get("project_name")
-    project_id = str(uuid4()) 
-    db.set(project_id, {"project_name": project_name, "OI_history": [], "OI_chat": []})
-    await update_global_state("project_id", project_id)
-    await update_global_state("OI_chat", [])
-    await update_global_state("OI_history", [])
-    return {"project_id": project_id, "project_name": project_name}
+    # check if project already exists
+    for key in db.getall():
+        if key == project_name:
+            return {"message": "Project already exists"}
+    db.set(project_name,[])
+    return {"project_name": project_name}
 
 @app.post("/get_project_data") # updates the global state with the project data
 async def get_project(request: Request):
     data = await request.form()
-    project_id = data.get("project_id")
-    all = db.getall()
-    dict = {}
-    for key in all:
-        if key == project_id:
-            project_name = db.get(key)["project_name"]
-            oichat = db.get(key)["OI_chat"]
-            oihistory = db.get(key)["OI_history"]
-            dict = {"project_id": project_id, "project_name": project_name, "OI_chat": oichat, "OI_history": oihistory}
-            await update_global_state("project_id", project_id)
-            await update_global_state("OI_chat", oichat)
-            await update_global_state("OI_history", oihistory)
-    return dict
+    project_name = data.get("project_name")
+    project = db.get(project_name)
+    print(project)
+    return project
 
-    
-
-@app.post("/delete_project") # deletes the project
+@app.delete("/delete_project") # deletes the project
 async def delete_project(request: Request):
     data = await request.form()
-    project_id = data.get("project_id")
-    # structure of db -> { project_id: ...data}
-    db.rem(project_id)
-    return "Project deleted"
+    project_name = data.get("project_name")
+    for key in db.getall():
+        if key == project_name:
+            db.rem(key)
+            return {"message": "Project deleted successfully"}
+    return {"message": "Project not found"}
     
-@app.get("/get_project_ids") # returns key value pairs of id and project name
+@app.get("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
     for key in db.getall():
-        project_id = key
-        project_name = db.get(key)["project_name"]
-        list.append({"project_id": project_id, "project_name": project_name})
+        project_name = key
+        list.append(project_name) 
     return list
 
 @app.post("/chat")
-
 async def chat(request: Request,file: UploadFile = None,image: UploadFile = None):
     """
     FORM DATA FORMAT:
     {
-        "unique_id": "user_id",
-        "assistant_name": "assistant_name",
-        "session_id": "session_id",
-        "customer_message": "message",
+        "project_name": "project_name",
+        "customer_message": "message"
     }
     """
     data = await request.form()
-    project_id = data.get("project_id")
-    session_id = data.get("session_id")
+    project_name = data.get("project_name")
     customer_message = data.get("customer_message")
-    # content = ""
-    # secondary_knowledge = ""
-    # save_path_da = f"user_data/{user_id}/{assistant_name}/data_analysis"
-    # check if save_path_da exists else create it
-    # if not os.path.exists(save_path_da):
-    #    os.makedirs(save_path_da)
-    
+    global StateOfMind 
+    StateOfMind = customer_message
+    original_query = customer_message
+    global history
+    global prevcoder
+    prevcoder = False
+    history = get_db(project_name)
+    history.append({"user_query":original_query})
+    update_db(project_name,{"user_query":original_query})
+    return StreamingResponse(chatGPT(project_name,original_query))
 
-    # server_response = dict()
-    server_response = ""
-    await update_global_state("project_id", project_id)
-    old_chat = await get_global_state("OI_chat")
-    chat = old_chat + [{"User":customer_message}]
-    # parse chat for openai prompt
-    openai_chat = json.dumps(chat)
-    await update_global_state("OI_chat",chat)
+
+def chatGPT(project_name,original_query):
+    global history
+    global web_search_response
+    global StateOfMind
+    global cc
+    global iter
+    global prevcoder
+    prevcoder = False
+    history_string = ""
+    for obj in history:
+        history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
+        history_string += f"AI_Coder_Message: {obj['message']}\n" if "message" in obj else ""
+        history_string += f"AI_Coder_Code: {obj['code']}\n" if "code" in obj else ""
+        history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
+        history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
     while(True):
-        res = await chatGPT(customer_message,openai_chat)
-        result = res.get("result")
-        print("Res.Iter: ",res.get("iter"))
-        function_response = res.get("function_response")
-        func = res.get("func")
-        iter = bool(res.get("iter"))
-        print("\n\niter",iter)
-        if func:
-            # chat = add_chat_log(func, function_response.get(func), chat)
-            server_response = function_response.get(func)
-            if(func=="coder"):
-                for obj in server_response:
-                    if obj["role"]=="assistant" and obj["type"]=="message":
-                        old = await get_global_state("OI_chat")
-                        old = old + [{"Assistant":obj["content"]}]
-                        await update_global_state("OI_chat",old)     
-                old = await get_global_state("OI_history")
-                await update_global_state("OI_history",old+function_response.get(func))
-            if(func=="web_search"):
-                old = await get_global_state("OI_chat")
-                old = old + [{"Assistant":server_response["message"]}]
-                await update_global_state("OI_chat",old)
-        else:
-            # chat = add_chat_log("assitant",result,chat)
-            server_response = result
-            old = await get_global_state("OI_chat")
-            old = old + [{"Assistant":server_response}]
-            await update_global_state("OI_chat",old)
-        print(chat)
-        """
-        collection.update_one(
-            {"project_id": project_id},
-            {
-                "$set": {
-                    "assistants.$.chat": chat,
-                    #"assistants.$.file_id": file_id,  # Replace with the actual value you want to set
-                    "assistants.$.session_id":session_id
-                }
-            }
+        iter+=1
+        prompt = process_assistant_data(original_query,StateOfMind,iter)
+        print("history" ,history_string)
+        message = [
+            {"role": "system", "content": history_string},
+            {"role": "user", "content": prompt}
+        ]
+        print("\nMessage to GPT: \n", prompt)
+        gpt_response = openai.chat.completions.create(
+            model=MODEL_NAME,
+            messages=message,
+            temperature=TEMPERATURE,
         )
-        """
-        print("ITER: ",iter)
-        if(not iter):
-            break
-    await update_db(project_id, "OI_chat", await get_global_state("OI_chat"))
-    await update_db(project_id, "OI_history", await get_global_state("OI_history"))
-    return server_response
+        print("\ngpt_response",gpt_response)
+        result = gpt_response.choices[0].message.content.strip()
+        print("\n\nResult: \n", result)
 
-def add_chat_log(agent, response, chat_log=""):
-    return f"{chat_log}{agent}: {response}\n"
-
-async def chatGPT(customer_message,chat):
-    res ={
-        "result":None,
-        "function_response":None,
-        "func":None,
-        "iter":False
-    }
-    prompt = process_assistant_data()
-    message = [
-        {"role": "system", "content": prompt},
-        {"role": "assistant", "content":chat},
-        {"role": "user", "content": customer_message},
-    ]
-    print("\nMessage to GPT: \n", message)
-    gpt_response = openai.chat.completions.create(
-        model=MODEL_NAME,
-        messages=message,
-        temperature=TEMPERATURE,
-    )
-    print("\ngpt_response",gpt_response)
-    result = gpt_response.choices[0].message.content
-    print("\n\nResult: \n", result)
-
-    functions = extract_function_names(result)
-    res["result"] = result    
-    res["iter"] = bool(extract_iter(result))
-
-    # print("\nChat: \n", chat)    
-    print("\nFunctions: \n", functions)
-    
-    function_response = dict()
-    if functions:
-        parameters = extract_function_parameters(result)
-        for func, parameter in zip(functions, parameters):
-            res["func"] = func
+        functions = extract_function_names(result)
+        print("\nFunctions: \n", functions)
+        
+        if functions:
+            parameters = extract_function_parameters(result)
+            func = functions[0]
+            parameter = parameters[0]
             print(func)
             print(parameter)
             try:
-                if func in function_dict:
-                    if func == "coder":
-                        oichat = await get_global_state("OI_chat")
-                        oihistory = await get_global_state("OI_history")
-                        query = parameter['query']
-                        coder_response = (coder(query, oichat, oihistory))
-                        function_response.update({"coder":coder_response})
-                    elif func == "web_search":
-                        response = (web_search(parameter['query']))
-                        function_response.update({"web_search":response})
-                    else:
-                        function_response.update(function_dict[func](**parameter))
-            except Exception as e:
+                if func == "coder":
+                    if prevcoder:
+                        out = json.dumps({"summary_text":"Is there anything else you would like to know?"})
+                        yield out.encode("utf-8") + b"\n"
+                        break
+                    query = parameter['query']
+                    coder = Coder(project_name)
+                    for chunk in coder.code(query,web_search_response):
+                        if json.loads(chunk) == {"exit":True}:
+                            break
+                        yield chunk
+                        update_db(project_name,json.loads(chunk))
+                    StateOfMind = "The coder function took the following steps :\n" + coder.summary
+                    prevcoder = True
+                    cc+=1
+                    if cc >= 2:
+                        StateOfMind = "Coder call finished. Call the summary_text function!"
+                    
+                elif func == "web_search":
+                    prevcoder = False
+                    response = (web_search(parameter['query']))
+                    out = json.dumps({"web_search":str(response)})
+                    yield out.encode("utf-8") + b"\n"
+                    update_db(project_name,{"web_search":str(response)})
+                    web_search_response = response
+                    StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function or return to user."
+                
+                elif func == "summary_text":
+                    prevcoder = False
+                    response = (parameter['message'])
+                    # check for ` in response and remove it
+                    response = response.replace("`","")
+                    out = json.dumps({"summary_text":response})
+                    yield out.encode("utf-8") + b"\n"
+                    update_db(project_name,{"summary_text":response})
+                    yield b''
+                    cc = 0
+                    iter = 0
+                    break
+
+                elif func == "getIssueSummary":
+                    from functions.issues import issueHelper
+                    prevcoder = False
+                    statement = parameter['statement']
+                    issue_helper = issueHelper(project_name)
+                    issue_summary = issue_helper.getIssueSummary(statement)
+                    StateOfMind = "The issue details have been extracted as follows : \n" + issue_summary + "\n\n NOTE : Call the summary_text function to answer user's query or Coder function to solve the issue."
+                    out = json.dumps({"getIssueSummary":issue_summary})
+                    yield out.encode("utf-8") + b"\n"
+                    update_db(project_name,{"getIssueSummary":issue_summary})
+            except Exception as e:  
                 print(f"Error calling the function {func} with parameters {parameter}: {e}")
-    res["function_response"] = function_response
-    return res
+                traceback.print_exc()
+        else:
+            pass
+        
+    
 
 # start the server
 if __name__ == "__main__":
     import uvicorn
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    os.environ["OPENAI_API_KEY"] = openai_api_key
+    print("OpenAI API Key:", openai_api_key)
+    openai = OpenAI(api_key=openai_api_key)
+
     uvicorn.run(app, host="0.0.0.0", port=8080)

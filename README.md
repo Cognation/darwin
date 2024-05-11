@@ -12,8 +12,9 @@
 - [Roadmap for Development](#roadmap-for-development)
 - [Getting Started](#getting-started)
   - [Requirements](#requirements)
-  - [Installation](#installation)🤖
-  - [How to use](#how-to-use)
+  - [Installation](#installation)
+  - [How to Use](#how-to-use)
+- [Best Practices for Engaging with Darwin](#best-practices-for-engaging-with-darwin)
 - [Help and Support](#help-and-support)
 - [License](#license)
 
@@ -117,6 +118,7 @@ All your data is stored on your machine, initialise your database using:
 ```
 mkdir ./data && touch ./data/data.db && echo '{}' > ./data/data.db
 ```
+**This version comes with changes that would require you to delete any previous data.db file you created.**
 ## Spinning up Darwin
 You can start using Darwin with these two lines of command
 ### Starting the server
@@ -128,6 +130,14 @@ python3 server.py
 cd ui
 npm start
 ```
+
+## Best Practices for Engaging with Darwin
+
+Darwin is an early-stage AI Assistant chatbot designed to support your advanced development inquiries. To enhance your experience, please consider the following guidelines:
+
+- Ensure that your queries are comprehensive and detailed, covering all aspects of your request.
+- Include links to any relevant issues or references to enable Darwin to provide more accurate and tailored responses.
+- If you encounter any difficulties, please raise issues or contact us. Your feedback is invaluable in helping us refine and improve your experience.
 
 ## Help and Support
 

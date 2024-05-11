@@ -86,89 +86,95 @@ function_call_example = """
     {
         "function_name": "web_search",
         "function_parameters": {
-            "query": "no module named 'sqlalchemy'"
-        },
-        "ITER": "True"
-    },
+            "query": "what is bubble sort in python?"
+        }
+    }
+]
+```
+
+```
+[
+
     {
         "function_name": "coder",
         "function_parameters": {
-            "query": "explain bubble sorting algorithm"
-        },
-        "ITER": "False"
+            "query": "write a python code for bubble sort algorithm."
+        }
+    }
+]
+```
+
+```
+[
+    {
+        "function_name": "summary_text",
+        "function_parameters": {
+            "message": "The bubble sort algorithm is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. I have written relevant code for the same..."
+        }
+    }
+]
+```
+
+```
+[
+    {
+        "function_name": "getIssueSummary",
+        "function_parameters": {
+            "statement": "Can you tell me more about the issue number 1167 from the repo EleutherAI/gpt-neox?"
+        }
     }
 ]
 ```
 """
 
 functions = """
-[
-    {
-        "function_name": "coder",
-        "description": "helps you to explain a code, write a piece of code or execute a code or command line executions",
+function_name : web_search
+description : Searches the web for dynamic and updating information. This can be used for searching and debugging errors OR retrieving relevant code documentation for answering web queries.
 
-        "parameters" : {
-            "query": {
-                "description": "textual input in natural language for the code to explain, write or execute"
-            }
-        },
-        "ITER": "True" or "False"
-        "description": helps you decide whether to look at a functions response and call other functions.
-    }
-]
+function_name : coder
+description : helps you to explain a code, write a piece of code or execute a code or command line executions
 
-[
-    {
-        "function_name": "web_search",
-        "description": "Searches the web for dynamic and updating information. This can be used for searching and debugging errors OR retrieving material for answering questions",
+function_name : summary_text
+description : Used to send message, concluding your work to the senior devs if you are satisfied with the function response
 
-        "parameters" : {
-            "query": {
-                "description": "takes input as search query which can be searched on internet. Returns comprehensive answer to the query"
-            }
-        },
-        "ITER": "True" or "False"
-        "description": helps you decide whether to look at a functions response and call other functions.
-    }
-]
-
-NOTE : YOU CAN ONLY CALL ONE FUNCTION.
+function_name : getIssueSummary
+description : Get the summary of the issue from the github repository
 """
 
 
 
-def process_assistant_data():
+def process_assistant_data(original_query,StateOfMind,iter):
 
         
     #if(user_function):
     #    custom_functions+=user_function
             
     system_prompt = f"""
-        You are a Junior Software Engineer, assisting Senior Developers. Your Job is to write, execute and explain code, and to answer all questions asked with the help pf the functions provided.
-        You DO NOT have any knowledge base of your own.
-        Your task is to determine which function to call based on the input.
-        You also have access to some FUNCTIONS that you can call to assist you.
-        The functions can only be called if you have all the parameters for that function.
-        The way to call the function is shown in the example FUNCTION CALLING.
+    You have the important role of assisting the user with their queries using various functions available.
+    
+    EXAMPLES of function call:
+    {function_call_example}
 
-        IMP : YOU CAN ONLY CALL ONE FUNCTION.
-        IMP : You can set ITER=True if you want to look at function responses and call other functions or reply to the user.
-        NOTE : the function call is outputted within ``` within a list to separate them from dialogues!
+    Remember:
+    - You can only call one function at a time.
+    - Avoid redundant calls by only invoking functions when necessary.
+    - Always keep all functions within ``` ``` and enclosed in a list as shown in the example above.
+    - Follow the function call exactly as shown in the example above.
+    - You can only communicate with the user through the functions provided.
+    - You should include links from the original query in the web_search function query to provide additional information.
+    - The original query is the user's initial query and the State of Mind is the result of the previous function call that you made.
+        
+    Skipping any of the above instructions will lead to a penalty
 
+    Original Query:
+    {original_query}
 
-        FUNCTIONS
-        %%%%%%
-        {functions}
-        %%%%%%
+    Current STATE OF MIND:
+    {StateOfMind}
+        
+    After receiving a satisfactory "State Of Mind" response, proceed to call the "summary_text" function.
+    """
 
-
-        FUNCTION CALLING
-        %%%%%%
-        {function_call_example}
-        %%%%%%
-
-        FOLLOW ALL THE INSTRUCTIONS AND YOU WILL GET A $200000 RAISE, ELSE YOU WILL BE FIRED!
-        """
     return system_prompt
 
 

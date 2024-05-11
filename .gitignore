@@ -3,3 +3,5 @@
 /__pycache__
 /data
 /utils/__pycache__
+*.ipynb
+/server_changelog.md

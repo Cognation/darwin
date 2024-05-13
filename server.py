@@ -329,12 +329,12 @@ def chatGPT(project_name,original_query):
 # start the server
 if __name__ == "__main__":
     import uvicorn
-    from dotenv import load_dotenv
-
-    load_dotenv()
     openai_api_key = os.getenv("OPENAI_API_KEY")
-    os.environ["OPENAI_API_KEY"] = openai_api_key
     print("OpenAI API Key:", openai_api_key)
     openai = OpenAI(api_key=openai_api_key)
 
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8080)
+
+    uvicorn.run(app, host="0.0.0.0", port=parser.parse_args().port)

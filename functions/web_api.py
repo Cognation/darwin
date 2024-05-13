@@ -9,16 +9,14 @@ import concurrent.futures
 import time
 import requests
 # from extract_web_links import scrape_pdf, extract_links
-from dotenv import load_dotenv
 import PyPDF2
 import os
 import re
 
-env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
-load_dotenv(env_path)
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 from openai import OpenAI
-client = OpenAI()
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def bm25_tokenizer(text):
     tokenized_doc = []

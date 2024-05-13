@@ -1,11 +1,8 @@
 import subprocess
 import openai
 import os
-from dotenv import load_dotenv
 import re
 import json
-
-load_dotenv()
 
 class issueHelper():
     def __init__(self,project_name):

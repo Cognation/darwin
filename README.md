@@ -143,7 +143,7 @@ Darwin is an early-stage AI Assistant chatbot designed to support your advanced 
 
 Should you have any queries, feedback, or ideas, do not hesitate to contact us. You can submit an issue through the [issue tracker](https://github.com/_/_/issues) or participate in our [discussions](https://github.com/_/_/discussions) for overall conversations.
 
-Furthermore, we also host a Discord server for the Darwin community, providing a platform for users to interact, exchange experiences, seek assistance, and engage in project collaboration. To join the Darwin community Discord server, simply [click here](https://discord.gg/dY8E6KUd).
+Furthermore, we also host a Discord server for the Darwin community, providing a platform for users to interact, exchange experiences, seek assistance, and engage in project collaboration. To join the Darwin community Discord server, simply [click here](https://discord.gg/N4TGBHjYkQ).
 
 ## License
 

@@ -60,8 +60,10 @@ def get_db(project_name):
     project = db.get(project_name)
     return copy.deepcopy(project)
 
-# Constants
-MODEL_NAME =  "gpt-4-turbo"  # config('MODEL_NAME')
+from dotenv import load_dotenv
+load_dotenv()
+
+MODEL_NAME = os.getenv("MODEL")
 MAX_TOKENS = 10000
 TEMPERATURE = 0
 
@@ -193,7 +195,7 @@ async def delete_project(request: Request):
             return {"message": "Project deleted successfully"}
     return {"message": "Project not found"}
     
-@app.get("/get_project_names") # returns key value pairs of id and project name
+@app.post("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
     for key in db.getall():
@@ -231,8 +233,7 @@ def chatGPT(project_name,original_query):
     global StateOfMind
     global cc
     global iter
-    global prevcoder
-    prevcoder = False
+    prevcall = None
     history_string = ""
     for obj in history:
         history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
@@ -242,7 +243,7 @@ def chatGPT(project_name,original_query):
         history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
     while(True):
         iter+=1
-        prompt = process_assistant_data(original_query,StateOfMind,iter)
+        prompt = process_assistant_data(original_query,StateOfMind,prevcall)
         print("history" ,history_string)
         message = [
             {"role": "system", "content": history_string},
@@ -250,7 +251,7 @@ def chatGPT(project_name,original_query):
         ]
         print("\nMessage to GPT: \n", prompt)
         gpt_response = openai.chat.completions.create(
-            model=MODEL_NAME,
+            model="gpt-4-turbo",
             messages=message,
             temperature=TEMPERATURE,
         )
@@ -269,10 +270,7 @@ def chatGPT(project_name,original_query):
             print(parameter)
             try:
                 if func == "coder":
-                    if prevcoder:
-                        out = json.dumps({"summary_text":"Is there anything else you would like to know?"})
-                        yield out.encode("utf-8") + b"\n"
-                        break
+                    prevcall = "coder"
                     query = parameter['query']
                     coder = Coder(project_name)
                     for chunk in coder.code(query,web_search_response):
@@ -287,16 +285,17 @@ def chatGPT(project_name,original_query):
                         StateOfMind = "Coder call finished. Call the summary_text function!"
                     
                 elif func == "web_search":
-                    prevcoder = False
-                    response = (web_search(parameter['query']))
+                    
+                    response = web_search(parameter['query'])
                     out = json.dumps({"web_search":str(response)})
                     yield out.encode("utf-8") + b"\n"
                     update_db(project_name,{"web_search":str(response)})
                     web_search_response = response
                     StateOfMind = "Browsed the web and retrieved relevant information. Call the coder function or return to user."
-                
+                    prevcall = "web_search"
+                    
                 elif func == "summary_text":
-                    prevcoder = False
+                    prevcall = "summary_text"
                     response = (parameter['message'])
                     # check for ` in response and remove it
                     response = response.replace("`","")

@@ -13,5 +13,6 @@ flask_cors
 python-decouple
 pillow
 openpyxl
-open-interpreter
 pickledb
+python-multipart
+open-interpreter

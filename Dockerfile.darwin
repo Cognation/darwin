@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+VOLUME /app/data
+
+COPY . /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl git && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+
+RUN rm -rf ui
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 80
+
+ENV NAME Darwin
+ENV INSTALL_CPP 1
+ENV INSTALL_JAVA 1
+
+RUN chmod +x build.sh \
+    ./build.sh
+
+CMD ["python3", "server.py", "--port", "80"]
+
+# sudo docker build --no-cache -f Dockerfile.darwin -t darwin .
+# sudo docker run --env-file .env -v ./data:/app/data -p 8080:80 darwin

@@ -47,6 +47,19 @@ The idea behind Darwin is to create an AI SWE Intern to assist in basic tasks. W
 
 ## Getting Started
 
+### Docker
+Darwin comes wrapped in a docker container with an image you can pull from the dockerhub here, or build and run the container yourself using
+```
+sudo docker build --no-cache -f Dockerfile.darwin -t darwin .
+sudo docker build -f Dockerfile.ui -t ui .
+``` 
+After you have configured your .env file, referring to the steps below, you can spin up these containers using
+```
+sudo docker run --env-file .env -v ./data:/app/data -p 8080:80 darwin
+sudo docker run -p 3000:3000  ui
+```
+Your app should now be live on localhost:3000
+
 ### Requirements
 ```
 Version's requirements

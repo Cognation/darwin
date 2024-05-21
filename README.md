@@ -48,7 +48,12 @@ The idea behind Darwin is to create an AI SWE Intern to assist in basic tasks. W
 ## Getting Started
 
 ### Docker
-Darwin comes wrapped in a docker container with an image you can pull from the dockerhub here, or build and run the container yourself using
+Darwin comes wrapped in a docker container with an image you can pull from the dockerhub using
+```
+sudo docker pull shankerabhigyan/darwin:latest
+sudo docker pull shankerabhigyan/ui:latest
+```
+Or build and run the container yourself using
 ```
 sudo docker build --no-cache -f Dockerfile.darwin -t darwin .
 sudo docker build -f Dockerfile.ui -t ui .

@@ -1,10 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
-
 load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
-os.environ["OPENAI_API_KEY"] = openai_api_key
 
 from openai import OpenAI
 
@@ -20,10 +17,11 @@ class Coder():
         self.history = []
         self.errors = 0
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.openai = OpenAI(api_key=openai_api_key)
+        self.model = "gpt-4-turbo"
+        self.openai = OpenAI(api_key=self.openai_api_key)
         self.interpreter = interpreter.interpreter
         self.interpreter.llm.api_key = self.openai_api_key
-        self.interpreter.llm.model = "gpt-4-turbo"
+        self.interpreter.llm.model = self.model
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
         self.interpreter.llm.context_window = 10000

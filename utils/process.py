@@ -135,7 +135,7 @@ function_name : coder
 description : helps you to explain a code, write a piece of code or execute a code or command line executions
 
 function_name : summary_text
-description : Used to send message, concluding your work to the senior devs if you are satisfied with the function response
+description : Used to send message, concluding your work to the user if you are satisfied with the function response
 
 function_name : getIssueSummary
 description : Get the summary of the issue from the github repository
@@ -143,7 +143,7 @@ description : Get the summary of the issue from the github repository
 
 
 
-def process_assistant_data(original_query,StateOfMind,iter):
+def process_assistant_data(original_query,StateOfMind,prevcall):
 
         
     #if(user_function):

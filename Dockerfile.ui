@@ -1,0 +1,15 @@
+FROM node:latest
+
+WORKDIR /app
+
+COPY ./ui /app/
+
+RUN npm install
+
+EXPOSE 3000
+
+ENV NAME DarwinUI
+CMD [ "npm" , "start" ]
+
+# sudo docker build -f Dockerfile.ui -t ui .
+# sudo docker run -p 3000:3000  ui

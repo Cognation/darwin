@@ -69,6 +69,9 @@ class Coder():
             self.history = json.load(f)
 
     def code(self, query, context):
+        self.get_repo_map()
+        print("Repo Map : ",self.repo_map)
+        self.interpreter.chat(f"Understand the following latest folder map of the current project for future queries : {self.repo_map}")
         q = make_query(query, context)
         temp = ""
         messages = []

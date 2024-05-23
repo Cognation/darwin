@@ -234,17 +234,19 @@ def chatGPT(project_name,original_query):
     global cc
     global iter
     prevcall = None
-    history_string = ""
-    for obj in history:
-        history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
-        history_string += f"AI_Coder_Message: {obj['message']}\n" if "message" in obj else ""
-        history_string += f"AI_Coder_Code: {obj['code']}\n" if "code" in obj else ""
-        history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
-        history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
     while(True):
         iter+=1
         prompt = process_assistant_data(original_query,StateOfMind,prevcall)
+        history = get_db(project_name)
+        history_string = ""
+        for obj in history:
+            history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
+            history_string += f"AI_Coder_Message: {obj['message']}\n" if "message" in obj else ""
+            history_string += f"AI_Coder_Code: {obj['code']}\n" if "code" in obj else ""
+            history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
+            history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
         print("history" ,history_string)
+        # truncate history string to turboo context length?
         message = [
             {"role": "system", "content": history_string},
             {"role": "user", "content": prompt}

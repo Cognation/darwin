@@ -1,0 +1,153 @@
+body{
+    margin: 0;
+    padding: 0;
+    color: rgb(224, 224, 224);
+}
+
+
+.main{
+    width: calc(100%-10px);
+    height: calc(100%-10px);
+}
+
+.heading h2{
+    text-align: center;
+    margin: 30px 0px 30px 0px;
+    /* color: transparent; */
+    color: rgb(224, 224, 224);
+    -webkit-background-clip: text;
+    background-clip: text;
+    font-weight: bold;
+    font-size: 4.2rem;
+}
+
+.top{
+    height: 600px;
+    background: linear-gradient(rgba(0, 0, 0, 0.57), rgba(0, 0, 0, 0.56)), url("../../Assets/Images/image.png");
+}
+
+.top_ul{
+    list-style: none;
+    max-height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.top_li{
+    height: 100%;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.top_li p:hover{
+    font-weight: 600;
+}
+
+.top_li_1{
+    width: 70%;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.features{
+    width: calc(100%-10px);
+    margin: 30px 0px 20px 0px;
+}
+
+.features h3{
+    text-align: center;
+    font-size: 40px;
+}
+
+.features_ul{
+    list-style: none;
+    display: flex;
+    margin: auto;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 90%;
+    flex-wrap: wrap;
+}
+
+.image{
+    height: 50%;
+    width: 100%;
+}
+
+.features_li{
+    width: 25%;
+    height: 200px;
+    border: 1px solid rgb(63, 63, 63);
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    flex-direction: column;
+    border-radius: 10px;
+}
+.features_li:hover{
+    background-color: rgb(29, 29, 29);
+    box-shadow: 0px 0px 10px rgb(166, 166, 166);
+}
+
+.flowchart{
+    width: 50%;
+    height: 100%;
+    max-height: 700px;
+    margin: 20px 0px 20px 0px;
+}
+
+.roadmap{
+    width: calc(100%-10px);
+    height: calc(100%-10px);
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+
+.try{
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    margin: 20px 0px 20px 0px;
+    font-size: 40px;
+    outline: none;
+}
+
+.info{
+    width: calc(100%-10px);
+    margin: 50px 0px 10px 0px;
+}
+
+.info p{
+    width: 70%;
+    margin: 30px auto 50px auto;
+    font-size: 25px;
+}
+
+.info_ul{
+    width: 80%;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    flex-direction: column;
+}
+
+.brain{
+    width: 100%;
+    height: 80%;
+}
+
+.text{
+    text-align: center;
+}
+
+.link{
+    text-decoration: none;
+}

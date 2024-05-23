@@ -221,7 +221,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     global history
     global prevcoder
     prevcoder = False
-    history = get_db(project_name)
+    history = get_db(project_name) if project_name in db.getall() else []
     history.append({"user_query":original_query})
     update_db(project_name,{"user_query":original_query})
     return StreamingResponse(chatGPT(project_name,original_query))

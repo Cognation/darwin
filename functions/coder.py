@@ -12,7 +12,7 @@ from openai import OpenAI
 
 
 def make_query(query, chat, map, cwd):
-    q = "Based on the following context:\n" + json.dumps(chat) + f" and the current folder tree : {map}\n\Answer and Code the following query:\n" + query + "Use {cwd} as the current working directory."
+    q = "Based on the following context:\n" + json.dumps(chat) + f" and the current folder tree(which shows the different files and relevant classes, can be used to analyze/edit existing codebase) : {map}\n\Answer and Code the following query:\n" + query + "Use {cwd} as the current working directory."
     return q
 
 class Coder():
@@ -30,7 +30,7 @@ class Coder():
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
         self.interpreter.llm.context_window = 4096
-        self.interpreter.llm.max_tokens = 3500
+        self.interpreter.llm.max_tokens = 1024
         self.repo_map = ""
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")

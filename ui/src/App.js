@@ -5,7 +5,6 @@ import { v1 } from "uuid";
 import Code from "./Components/Code/Code";
 import Failure from "./Components/Failure/Failure.jsx";
 import Navbar from "./Components/Navbar/Navbar.jsx";
-import Landing from "./Components/Landing/Landing.jsx";
 import FileEx from "./Components/FileExplorer/FileExplorer.jsx";
 import { useZustandStore } from "./store";
 
@@ -60,14 +59,6 @@ function App() {
           <Route path="/register" element={<Register />} /> */}
           <Route
             path="/"
-            element={
-              <>
-              <Landing/>
-              </>
-            }
-          />
-          <Route
-            path="/code"
             element={
               <>
                 <Navbar />

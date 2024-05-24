@@ -92,6 +92,15 @@ body{
     min-width: 50%;
   }
 
+
+.otherBoxes::-webkit-scrollbar {
+  display: none;
+}
+
+.ul::-webkit-scrollbar {
+  display: none;
+}
+
   .terminal_box{
     height: 100%;
     border: 1px solid black;

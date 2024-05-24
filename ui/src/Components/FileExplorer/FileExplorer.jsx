@@ -40,7 +40,7 @@ const FileExplorer = () => {
   return (
     <div className={styles.exp}>
       <div>{files ? <Explorer data={files} /> : <p>Loading...</p>}</div>
-      <footer>Click on the file to acces them in the code editor.</footer>
+      <footer>Click on the file to access them in the code editor.</footer>
     </div>
   );
 };

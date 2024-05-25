@@ -17,7 +17,8 @@ function Navbar() {
     setMessages,
     theme,
     setFiles,
-    setplan
+    setplan,
+    plan
   } = useZustandStore();
 
   useEffect(() => {
@@ -57,6 +58,8 @@ function Navbar() {
       // console.log("Chat History : " , data.OI_chat);
       const chat_history = data;
       let msgs = [];
+      let pl = "";
+      let iteration = 1;
 
       for (const item of chat_history) {
         console.log("Item : ", item);
@@ -66,6 +69,28 @@ function Navbar() {
             text: item?.user_query,
             sender: "user",
           });
+        }
+
+        if (item?.message) {
+          pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${item?.message}`;
+          iteration++;
+          // pl.push(`${data?.message}\n\n`);
+          console.log("Plan : " , plan);
+          setplan(pl);
+        }
+
+        if (item?.web_search) {
+          pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${item?.web_search}`;
+          iteration++;
+          // pl.push(`${data?.web_search}\n\n`);
+          setplan(pl);
+        }
+
+        if (item?.getIssueSummary) {
+          pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${item?.getIssueSummary}`;
+          iteration++;
+          // pl.push(`${data?.web_search}\n\n`);
+          setplan(pl);
         }
 
         if (item?.summary_text) {

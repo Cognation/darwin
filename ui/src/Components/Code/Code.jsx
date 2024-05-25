@@ -29,6 +29,8 @@ const Code = () => {
     theme,
     editor_expanded,
     setEditor_expanded,
+    plan,
+    setplan
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
@@ -37,7 +39,7 @@ const Code = () => {
   const [input_msg, setinput_msg] = useState("");
   const [istyping, setistyping] = useState(false);
   const [selected_file, setselected_file] = useState(null);
-  const [plan, setplan] = useState("");
+  // const [plan, setplan] = useState("");
   const [selected_file_language, setselected_file_language] = useState(
     selected_file?.language || "python"
   );
@@ -85,9 +87,8 @@ const Code = () => {
     let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
     setLineData(ld);
     let codee = "";
-    setplan("");
 
-    let pl = "";
+    let pl = plan;
 
     let iteration = 1;
 

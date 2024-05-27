@@ -92,6 +92,15 @@ body{
     min-width: 50%;
   }
 
+
+.otherBoxes::-webkit-scrollbar {
+  display: none;
+}
+
+.ul::-webkit-scrollbar {
+  display: none;
+}
+
   .terminal_box{
     height: 100%;
     border: 1px solid black;
@@ -146,7 +155,7 @@ body{
     margin: 0;
     border-radius: 10px;
     height: fit-content;
-    overflow: auto;
+    overflow: hidden;
   }
 
   @media (max-width: 1095px) {

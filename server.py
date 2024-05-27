@@ -195,7 +195,7 @@ async def delete_project(request: Request):
             return {"message": "Project deleted successfully"}
     return {"message": "Project not found"}
     
-@app.post("/get_project_names") # returns key value pairs of id and project name
+@app.get("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
     for key in db.getall():
@@ -221,7 +221,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     global history
     global prevcoder
     prevcoder = False
-    history = get_db(project_name)
+    history = get_db(project_name) if project_name in db.getall() else []
     history.append({"user_query":original_query})
     update_db(project_name,{"user_query":original_query})
     return StreamingResponse(chatGPT(project_name,original_query))
@@ -234,17 +234,19 @@ def chatGPT(project_name,original_query):
     global cc
     global iter
     prevcall = None
-    history_string = ""
-    for obj in history:
-        history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
-        history_string += f"AI_Coder_Message: {obj['message']}\n" if "message" in obj else ""
-        history_string += f"AI_Coder_Code: {obj['code']}\n" if "code" in obj else ""
-        history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
-        history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
     while(True):
         iter+=1
         prompt = process_assistant_data(original_query,StateOfMind,prevcall)
+        history = get_db(project_name)
+        history_string = ""
+        for obj in history:
+            history_string += f"User: {obj['user_query']}\n" if "user_query" in obj else ""
+            history_string += f"AI_Coder_Message: {obj['message']}\n" if "message" in obj else ""
+            history_string += f"AI_Coder_Code: {obj['code']}\n" if "code" in obj else ""
+            history_string += f"AI_Coder_Output: {obj['console']}\n" if "console" in obj else ""
+            history_string += f"Web_search: {obj['web_search']}\n" if "web_search" in obj else ""
         print("history" ,history_string)
+        # truncate history string to turboo context length?
         message = [
             {"role": "system", "content": history_string},
             {"role": "user", "content": prompt}

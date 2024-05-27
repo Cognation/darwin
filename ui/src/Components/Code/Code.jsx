@@ -8,6 +8,7 @@ import Terminal, {
   TerminalInput,
   TerminalOutput,
 } from "react-terminal-ui";
+import Markdown from "react-markdown";
 
 import { ReactComponent as SETTING_SVG } from "../../Assets/SVG/setting.svg";
 import { ReactComponent as SETTING_SVG_WHITE } from "../../Assets/SVG/setting-white.svg";
@@ -28,6 +29,8 @@ const Code = () => {
     theme,
     editor_expanded,
     setEditor_expanded,
+    plan,
+    setplan
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
@@ -36,7 +39,7 @@ const Code = () => {
   const [input_msg, setinput_msg] = useState("");
   const [istyping, setistyping] = useState(false);
   const [selected_file, setselected_file] = useState(null);
-  const [plan, setplan] = useState("");
+  // const [plan, setplan] = useState("");
   const [selected_file_language, setselected_file_language] = useState(
     selected_file?.language || "python"
   );
@@ -84,9 +87,10 @@ const Code = () => {
     let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
     setLineData(ld);
     let codee = "";
-    setplan("");
 
-    let pl = "";
+    let pl = plan;
+
+    let iteration = 1;
 
     console.log(selectedProject);
 
@@ -128,19 +132,22 @@ const Code = () => {
           }
 
           if (data?.message) {
-            pl = pl + `\n\n ${data?.message}`;
+            pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.message}`;
+            iteration++;
             // pl.push(`${data?.message}\n\n`);
             setplan(pl);
           }
 
           if (data?.web_search) {
-            pl = pl + `\n\n ${data?.web_search}`;
+            pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.web_search}`;
+            iteration++;
             // pl.push(`${data?.web_search}\n\n`);
             setplan(pl);
           }
 
           if (data?.getIssueSummary) {
-            pl = pl + `\n\n ${data?.getIssueSummary}`;
+            pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.getIssueSummary}`;
+            iteration++;
             // pl.push(`${data?.web_search}\n\n`);
             setplan(pl);
           }
@@ -213,7 +220,7 @@ const Code = () => {
               {messages &&
                 messages.length > 0 &&
                 messages.map((message, index) => {
-                  const texts = message?.text?.split("\n");
+                  // const texts = message?.text?.split("\n");
                   return (
                     <div key={index + 11}>
                       <div
@@ -228,102 +235,104 @@ const Code = () => {
                             : null
                         }`}
                       >
-                        {texts &&
-                          texts.length > 0 &&
-                          texts.map((item, index) => {
-                            if (
-                              item &&
-                              index === texts.length - 2 &&
-                              !texts[index + 1]
-                            ) {
-                              return (
-                                <>
-                                  {item.startsWith("**") &&
-                                  item.endsWith("**") ? (
-                                    <span key={index}>
-                                      <b className={styles.b}>
-                                        <span>
-                                          {item.substring(2, item.length - 2)}
-                                        </span>
-                                      </b>
-                                    </span>
-                                  ) : item.startsWith("#") ? (
-                                    <span key={index}>
-                                      <b className={styles.b}>
-                                        <span>{item.replaceAll("#", "")}</span>
-                                      </b>
-                                    </span>
-                                  ) : (
-                                    <span key={index}>
-                                      <span>{item}</span>
-                                    </span>
-                                  )}
-                                </>
-                              );
-                            } else if (item) {
-                              if (index !== texts.length - 1) {
-                                return (
-                                  <>
-                                    {item.startsWith("**") &&
-                                    item.endsWith("**") ? (
-                                      <span key={index}>
-                                        <b>
-                                          <span>
-                                            {item.substring(2, item.length - 2)}
-                                          </span>
-                                        </b>
-                                        <br />
-                                        <br />
-                                      </span>
-                                    ) : item.startsWith("#") ? (
-                                      <span key={index}>
-                                        <b>
-                                          <span>
-                                            {item.replaceAll("#", "")}
-                                          </span>
-                                        </b>
-                                        <br />
-                                        <br />
-                                      </span>
-                                    ) : (
-                                      <span key={index}>
-                                        <span>{item}</span>
-                                        <br />
-                                        <br />
-                                      </span>
-                                    )}
-                                  </>
-                                );
-                              } else {
-                                return (
-                                  <>
-                                    {item.startsWith("**") &&
-                                    item.endsWith("**") ? (
-                                      <span key={index}>
-                                        <b className={styles.b}>
-                                          <span>
-                                            {item.substring(2, item.length - 2)}
-                                          </span>
-                                        </b>
-                                      </span>
-                                    ) : item.startsWith("#") ? (
-                                      <span key={index}>
-                                        <b className={styles.b}>
-                                          <span>
-                                            {item.replaceAll("#", "")}
-                                          </span>
-                                        </b>
-                                      </span>
-                                    ) : (
-                                      <span key={index}>
-                                        <span>{item}</span>
-                                      </span>
-                                    )}
-                                  </>
-                                );
-                              }
-                            }
-                          })}
+                        {message && message?.text &&
+                          
+                          // texts.map((item, index) => {
+                          //   if (
+                          //     item &&
+                          //     index === texts.length - 2 &&
+                          //     !texts[index + 1]
+                          //   ) {
+                          //     return (
+                          //       <>
+                          //         {item.startsWith("**") &&
+                          //         item.endsWith("**") ? (
+                          //           <span key={index}>
+                          //             <b className={styles.b}>
+                          //               <span>
+                          //                 {item.substring(2, item.length - 2)}
+                          //               </span>
+                          //             </b>
+                          //           </span>
+                          //         ) : item.startsWith("#") ? (
+                          //           <span key={index}>
+                          //             <b className={styles.b}>
+                          //               <span>{item.replaceAll("#", "")}</span>
+                          //             </b>
+                          //           </span>
+                          //         ) : (
+                          //           <span key={index}>
+                          //             <span>{item}</span>
+                          //           </span>
+                          //         )}
+                          //       </>
+                          //     );
+                          //   } else if (item) {
+                          //     if (index !== texts.length - 1) {
+                          //       return (
+                          //         <>
+                          //           {item.startsWith("**") &&
+                          //           item.endsWith("**") ? (
+                          //             <span key={index}>
+                          //               <b>
+                          //                 <span>
+                          //                   {item.substring(2, item.length - 2)}
+                          //                 </span>
+                          //               </b>
+                          //               <br />
+                          //               <br />
+                          //             </span>
+                          //           ) : item.startsWith("#") ? (
+                          //             <span key={index}>
+                          //               <b>
+                          //                 <span>
+                          //                   {item.replaceAll("#", "")}
+                          //                 </span>
+                          //               </b>
+                          //               <br />
+                          //               <br />
+                          //             </span>
+                          //           ) : (
+                          //             <span key={index}>
+                          //               <span>{item}</span>
+                          //               <br />
+                          //               <br />
+                          //             </span>
+                          //           )}
+                          //         </>
+                          //       );
+                          //     } else {
+                          //       return (
+                          //         <>
+                          //           {item.startsWith("**") &&
+                          //           item.endsWith("**") ? (
+                          //             <span key={index}>
+                          //               <b className={styles.b}>
+                          //                 <span>
+                          //                   {item.substring(2, item.length - 2)}
+                          //                 </span>
+                          //               </b>
+                          //             </span>
+                          //           ) : item.startsWith("#") ? (
+                          //             <span key={index}>
+                          //               <b className={styles.b}>
+                          //                 <span>
+                          //                   {item.replaceAll("#", "")}
+                          //                 </span>
+                          //               </b>
+                          //             </span>
+                          //           ) : (
+                          //             <span key={index}>
+                          //               <span>{item}</span>
+                          //             </span>
+                          //           )}
+                          //         </>
+                          //       );
+                          //     }
+                          //   }
+                          // })}
+                          <Markdown>{message?.text}</Markdown>
+                        }
                       </div>
                     </div>
                   );

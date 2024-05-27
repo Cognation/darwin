@@ -3,11 +3,16 @@ import json
 from dotenv import load_dotenv
 load_dotenv()
 
+from aider.io import InputOutput
+from aider.models import Model
+from aider.repomap import RepoMap
+import re
+
 from openai import OpenAI
 
 
-def make_query(query, chat):
-    q = "Based on the following context:\n" + json.dumps(chat) + "\n\Answer and Code the following query:\n" + query
+def make_query(query, chat, map, cwd):
+    q = "Based on the following context:\n" + json.dumps(chat) + f" and the current folder tree(which shows the different files and relevant classes, can be used to analyze/edit existing codebase) : {map}\n\Answer and Code the following query:\n" + query + "Use {cwd} as the current working directory."
     return q
 
 class Coder():
@@ -24,8 +29,9 @@ class Coder():
         self.interpreter.llm.model = self.model
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
-        self.interpreter.llm.context_window = 10000
-        self.interpreter.llm.max_tokens = 4096
+        self.interpreter.llm.context_window = 4096
+        self.interpreter.llm.max_tokens = 1024
+        self.repo_map = ""
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
@@ -36,7 +42,7 @@ class Coder():
         else:
             print(f"Directory already exists: {self.path}")
 
-        ci = f"Very Important : Your working directory is {self.path}, no work is to be done outside this folder! . Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
+        ci = f"Very Important : Your working directory is {self.path}, no work is to be done outside this folder including repo clones! . Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
         self.interpreter.custom_instructions = ci + custom_instructions # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
         self.load_history()
         print("path : ",self.path)
@@ -63,7 +69,8 @@ class Coder():
             self.history = json.load(f)
 
     def code(self, query, context):
-        q = make_query(query, context)
+        self.get_repo_map()
+        q = make_query(query, context, self.repo_map, self.path)
         temp = ""
         messages = []
         for chunk in self.interpreter.chat(q, stream=True, display=True):
@@ -74,11 +81,11 @@ class Coder():
             if 'start' in chunk:
                 key = chunk["type"]
             elif 'end' in chunk:
-                if(key=="code"):
-                    content = temp
-                    # append to file code.py
-                    with open(os.path.join(self.path, "code.py"), "a") as f:
-                        f.write(content)
+                # if(key=="code"):
+                #     content = temp
+                #     # append to file code.py
+                #     with open(os.path.join(self.path, "code.py"), "a") as f:
+                #         f.write(content)
                 yield json.dumps({key:temp}).encode("utf-8") + b"\n"
                 temp = ""
             else:
@@ -96,7 +103,7 @@ class Coder():
                             break
                     temp += str(chunk["content"])
         # print("Message : ",messages)
-        self.interpreter.chat(f"Write this code in a new file that does not already exist in the {self.path} directory with open. Use proper formatting and no '\n's")
+        self.interpreter.chat(f"If any, write the code from your history in a new file that does not already exist in the {self.path} directory with open, else skip. Use proper formatting and no '\n's")
         self.save_history()
         self.summary = self.generate_summary(self.parse_output(messages))
 
@@ -136,6 +143,29 @@ class Coder():
             temperature = 0.7
         )
         return summary.choices[0].message.content
+    
+    def get_repo_map(self):
+        model = Model("gpt-4-turbo")
+        io = InputOutput()
+        dir =  os.path.join(os.getcwd(), "data", self.project_name)
+        files = []
+        excl = [
+            r'^\.',
+            r'^\.git*',
+            r'^__pycache__',
+            r'history.json'
+        ]
+
+        for root, _, file in os.walk(dir):
+            for f in file:
+                full_path = os.path.join(root, f)
+                path_components = os.path.normpath(full_path).split(os.sep)
+                if not any(re.search(pattern, component) for component in path_components for pattern in excl):
+                    files.append(full_path)
+        repoMap = RepoMap(main_model=model, root=dir, io=io)
+        self.repo_map = repoMap.get_repo_map([],files)
+        print("Repo Map : ",self.repo_map)
+
     
 if __name__ == "__main__":
     c = Coder("1")

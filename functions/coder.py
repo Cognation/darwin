@@ -29,12 +29,24 @@ class Coder():
         self.interpreter.llm.model = self.model
         self.interpreter.llm.temperature = 0
         self.interpreter.auto_run = True
-        self.interpreter.llm.context_window = 4096
-        self.interpreter.llm.max_tokens = 1024
-        self.repo_map = ""
+        self.interpreter.llm.context_window = 8192
+        self.interpreter.llm.max_tokens = 4096
         self.project_name = project_name
         folder = os.path.join(os.getcwd(), "data")
         self.path = os.path.join(folder, project_name)
+        ci = f"""
+        You are the world's best professional programmer, you task is to write end-to-end running code for the query provided below.
+
+        Important Instructions:
+        # Your current working directory is {self.path}, no work is to be done outside this folder including repo clones!
+        # You will be given access to a folder tree which shows the different files and relevant classes, within your CWD directory, that can be used to analyze/edit the existing codebase.
+        # You cannot ask the user for any input, any input required should be hardcoded.
+        # You do not have access to run servers on ports, comment out any main commands to host servers after writing the code.
+
+        Follow each instruction else you will be fined $1000 for each instruction missed.
+        """
+        self.interpreter.custom_instructions = ci
+        self.repo_map = ""
         # self.interpreter.chat(f"Check if the directory {self.path} exists. If not create the directory")
         if not os.path.exists(self.path):
             os.makedirs(self.path)
@@ -42,13 +54,18 @@ class Coder():
         else:
             print(f"Directory already exists: {self.path}")
 
-        ci = f"Very Important : Your working directory is {self.path}, no work is to be done outside this folder including repo clones! . Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
-        self.interpreter.custom_instructions = ci + custom_instructions # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
+        # ci = f"Very Important : Your working directory is {self.path}, no work is to be done outside this folder including repo clones! . Run all pip install commands as pip install -y [package_name]. Write end-to-end code in proper code format, not as text."
+        # self.interpreter.custom_instructions = ci + custom_instructions # + f"Write code(python/c++ etc. code only) in {self.path} in new files. Do not write cli commands or any other information."
         self.load_history()
         print("path : ",self.path)
 
-    def make_query(self, query, context):
-        q = "Based on the following context:\n" + context + "\n\nWrite and execute code for the query:\n" + query
+    def make_query(self, query, context, map, cwd):
+        # q = "Based on the following context:\n" + context + f" and the current folder tree(which shows the different files and relevant classes, can be used to analyze/edit existing codebase) : {map}\n\Answer and Code the following query:\n" + query + f"Use {cwd} as the current working directory."
+        q = f"""
+        Given the following context : {context} and the current folder tree(which shows the different files and relevant classes, can be used to analyze/edit existing codebase) : {map}
+        Answer and Code the following query : {query}
+        Use {cwd} as the current working directory for all operations.
+        """
         return q
     
     def add_chat(self, chat):
@@ -59,7 +76,7 @@ class Coder():
 
     def save_history(self):
         with open(os.path.join(self.path, "history.json"), "w") as f:
-            json.dump(self.history, f)
+            json.dump(self.interpreter.history, f)
 
     def load_history(self):
         if not os.path.exists(os.path.join(self.path, "history.json")):
@@ -67,10 +84,11 @@ class Coder():
                 json.dump([], f)
         with open(os.path.join(self.path, "history.json"), "r") as f:
             self.history = json.load(f)
+            self.interpreter.history = self.history
 
     def code(self, query, context):
         self.get_repo_map()
-        q = make_query(query, context, self.repo_map, self.path)
+        q = self.make_query(query, context, self.repo_map, self.path)
         temp = ""
         messages = []
         for chunk in self.interpreter.chat(q, stream=True, display=True):
@@ -86,7 +104,8 @@ class Coder():
                 #     # append to file code.py
                 #     with open(os.path.join(self.path, "code.py"), "a") as f:
                 #         f.write(content)
-                yield json.dumps({key:temp}).encode("utf-8") + b"\n"
+                "UNCOMMENT"
+                # yield json.dumps({key:temp}).encode("utf-8") + b"\n"
                 temp = ""
             else:
                 if 'format' in chunk and chunk["format"] == "active_line":
@@ -97,13 +116,14 @@ class Coder():
                     if "key" == "console" and chunk["format"] == "output" and "Error" in chunk["content"]:
                         self.errors += 1
                         if self.errors > 2:
-                            self.interpreter.chat("Too many errors. Exiting.")
+                            # self.interpreter.chat("Too many errors. Exiting.")
                             self.summary = "Got errors while writing code, here is a summary of what was done.\n" + self.generate_summary(self.parse_output(messages)) + "Recommend calling Web Search."
-                            yield json.dumps({"exit":True}).encode("utf-8") + b"\n"
+                            "UNCOMMENT"
+                            # yield json.dumps({"exit":True}).encode("utf-8") + b"\n"
                             break
                     temp += str(chunk["content"])
         # print("Message : ",messages)
-        self.interpreter.chat(f"If any, write the code from your history in a new file that does not already exist in the {self.path} directory with open, else skip. Use proper formatting and no '\n's")
+        self.interpreter.chat(f"If required, write the code from your history in a new file that does not already exist in the {self.path} directory with open, else skip. Use proper formatting and no '\n's")
         self.save_history()
         self.summary = self.generate_summary(self.parse_output(messages))
 
@@ -168,12 +188,74 @@ class Coder():
 
     
 if __name__ == "__main__":
-    c = Coder("1")
-    sample_message = {
-        {"role": "assistant", "type": "code", "format": "python", "start": True},
-        {"role": "assistant", "type": "code", "format": "python", "content": "34"},
-        {"role": "assistant", "type": "code", "format": "python", "content": " /"},
-        {"role": "assistant", "type": "code", "format": "python", "content": " "},
-        {"role": "assistant", "type": "code", "format": "python", "content": "24"},
-        {"role": "assistant", "type": "code", "format": "python", "end": True}
-    }
+    # c = Coder("ctfs2")
+    queriesFullStack = [
+        """
+        I want a real-time chat application where two people can talk to each other through the browser in a livechat-like environment. 
+        Each of the users should have a name and the app should store the history of the conversation. 
+        You should also allow for emoji use by having an emoji selector in input box. 
+        Each message in the message timeline should be accompanied by a timestamp of the message and who sent it. 
+        Messages most recently sent should be at the bottom of the message history.
+        """,
+        """
+        build a responsive website and use gscp for animations and use pinning like technology 
+        from gscp for designing and react tosttify for any notification
+        """,
+        """
+        build a full stack chat application using 
+        socket.io and authorisation using JWT Token and cookies and use SQL based database
+        """,
+        """
+        build a real time video calling full stack app using webRTC
+        """
+    ]
+    context = ""
+    # c.code(queriesFullStack[2], context)
+
+    # c = Coder("ct5oai")
+    # queryOpenAI = """
+    # Build a custom chatbot using OpenAI API that can act as my coding assistant and help me write code snippets for different tasks.
+    # It should preserve history of the conversation and shut down once the task is complete.
+    # """
+    # openai_doc = ""
+    # with open("./functions/openai.txt","r") as f:
+    #     openai_doc = f.read()
+
+    # c.code(queryOpenAI, openai_doc)
+
+    """
+    API example
+    """
+    c = Coder("ct4oaiapi")
+    customdoc = """
+    Method: GET
+    URL: /api/customers
+    Description: Get a list of all customer names
+
+    Method: GET
+    URL: /api/customer/{name}
+    Description: Get a specific customer's details including Name, Username, Password and Phone Number in JSON format
+
+    Method: POST
+    URL: /api/customer/{name}/{password}
+    Description: Add a new customer to the database with the given name and password
+
+    Method: GET
+    URL: /api/customer/{name}/login/{password}
+    Description: Check if the customer with the given name and password exists in the database
+    """
+    query = f"""
+    I want to build a chatbot application for my organisation.
+    I want the chatbot to use the OpenAI API to generate responses to user queries.
+    You will have access to a custom API documentation that you can use provide the following functionalities:
+        - User Signup
+        - User Login
+    After verification, a user should be able to interact with the chatbot and get responses to their queries.
+    """
+    openai_doc = ""
+    with open("./functions/openai.txt","r") as f:
+        openai_doc = f.read()
+    context = openai_doc + f"Custom API Documentation: {customdoc}"
+
+    
+    c.code(query, context)

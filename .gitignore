@@ -6,3 +6,6 @@
 *.ipynb
 /server_changelog.md
 .aider*
+pythagora.db
+pythagora.log
+./config.json

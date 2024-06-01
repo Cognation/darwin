@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Terminal</title>
+<script>
+    window.onload = function() {
+        var ws = new WebSocket('ws://' + window.location.host + '/term');
+        var terminal = document.getElementById('terminal');
+        var input = document.getElementById('input');
+    
+        ws.onmessage = function(event) {
+            terminal.textContent += event.data;
+        };
+    
+        input.onkeydown = function(event) {
+            if (event.keyCode === 13) { // Enter key
+                ws.send(input.value);
+                input.value = '';
+            }
+        };
+    };
+</script>    
+</head>
+<body>
+<pre id="terminal" style="height:300px;overflow:auto;"></pre>
+<input type="text" id="input">
+</body>
+</html>

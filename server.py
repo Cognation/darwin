@@ -203,6 +203,55 @@ async def get_projects():
         list.append(project_name) 
     return list
 
+### HANDLING OUTPUT STREAMING
+pyth_messages = []
+@app.post("/out")
+async def catch(request: Request):
+    data = await request.form()
+    message = data.get("message")
+    pyth_messages.append({"out":message})
+    return {"status": "OK"}
+
+### HANDLING STREAM
+@app.get('/stream')
+async def stream_data():
+    async def generate():
+        while True:
+            if pyth_messages:
+                temp = pyth_messages.copy()
+                pyth_messages.clear()
+                for message in temp:
+                    yield json.dumps(message) + "\n"
+            await asyncio.sleep(.5)
+    return StreamingResponse(generate(), media_type='text/event-stream')
+
+### HANDLING INPUT STREAMING
+input_messages  = {}
+prompt_id = ""
+@app.get("/in")
+async def catch_request(request: Request):
+    data = await request.form()
+    message = data.get("prompt")
+    prompt_id = str(uuid4())
+    pyth_messages.append({"in":message, "prompt_id":prompt_id})
+    while True:
+        if prompt_id in input_messages:
+            response = input_messages[prompt_id]
+            del input_messages[prompt_id]
+            return {"input": response}
+        await asyncio.sleep(.5)
+
+@app.post("/in/response")
+async def catch_response(request: Request):
+    data = await request.form()
+    prompt_id = data.get("prompt_id")
+    response = data.get("response")
+    input_messages[prompt_id] = response
+    return {"status": "OK"}
+
+
+    
+
 @app.post("/chat")
 async def chat(request: Request,file: UploadFile = None,image: UploadFile = None):
     """

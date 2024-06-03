@@ -255,7 +255,7 @@ class FileSystemConfig(_StrictModel):
 
     type: Literal[FileSystemType.LOCAL] = FileSystemType.LOCAL
     workspace_root: str = Field(
-        join(ROOT_DIR, "workspace"),
+        join(ROOT_DIR, "data"),
         description="Workspace directory containing all the projects",
     )
     ignore_paths: list[str] = Field(

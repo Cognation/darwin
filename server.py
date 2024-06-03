@@ -241,6 +241,18 @@ async def catch_request(request: Request):
             return {"input": response}
         await asyncio.sleep(.5)
 
+@app.get("/request_project_name")
+async def get_project_name(request: Request):
+    global project_name
+    print("Sending project name:", project_name)
+    return {"project_name": project_name}
+
+@app.get("/request_user_query")
+async def get_user_query(request: Request):
+    global StateOfMind
+    print("Sending user query:", StateOfMind)
+    return {"user_query": StateOfMind}
+
 @app.post("/in/response")
 async def catch_response(request: Request):
     data = await request.form()
@@ -262,6 +274,7 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     }
     """
     data = await request.form()
+    global project_name
     project_name = data.get("project_name")
     customer_message = data.get("customer_message")
     global StateOfMind 
@@ -275,6 +288,8 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
     update_db(project_name,{"user_query":original_query})
     return StreamingResponse(chatGPT(project_name,original_query))
 
+
+import subprocess
 
 def chatGPT(project_name,original_query):
     global history
@@ -321,19 +336,21 @@ def chatGPT(project_name,original_query):
             print(parameter)
             try:
                 if func == "coder":
-                    prevcall = "coder"
-                    query = parameter['query']
-                    coder = Coder(project_name)
-                    for chunk in coder.code(query,web_search_response):
-                        if json.loads(chunk) == {"exit":True}:
-                            break
-                        yield chunk
-                        update_db(project_name,json.loads(chunk))
-                    StateOfMind = "The coder function took the following steps :\n" + coder.summary
-                    prevcoder = True
-                    cc+=1
-                    if cc >= 2:
-                        StateOfMind = "Coder call finished. Call the summary_text function!"
+                    # prevcall = "coder"
+                    # query = parameter['query']
+                    # coder = Coder(project_name)
+                    # for chunk in coder.code(query,web_search_response):
+                    #     if json.loads(chunk) == {"exit":True}:
+                    #         break
+                    #     yield chunk
+                    #     update_db(project_name,json.loads(chunk))
+                    # StateOfMind = "The coder function took the following steps :\n" + coder.summary
+                    # prevcoder = True
+                    # cc+=1
+                    # if cc >= 2:
+                    #     StateOfMind = "Coder call finished. Call the summary_text function!"
+                    subprocess.run(["python", "main.py"])
+                    break
                     
                 elif func == "web_search":
                     
@@ -386,5 +403,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8080)
+
+    global project_name
+    project_name = ""
 
     uvicorn.run(app, host="0.0.0.0", port=parser.parse_args().port)

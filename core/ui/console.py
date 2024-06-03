@@ -14,7 +14,33 @@ def post(data):
     except requests.exceptions.RequestException as e:
         print("Error : ", str(e))
 
+def request_project_name(url="http://localhost:8080/request_project_name"):
+    try:
+        res = requests.get(url)
+        return res.json()["project_name"]
+    except requests.exceptions.RequestException as e:
+        print("Error : ", str(e))
+        return "continue"
+    
+def request_user_query(url="http://localhost:8080/request_user_query"):
+    try:
+        res = requests.get(url)
+        return res.json()["user_query"]
+    except requests.exceptions.RequestException as e:
+        print("Error : ", str(e))
+        return "continue"
+    
+input_counter = 0
 def get_input(prompt):
+    global input_counter
+    if input_counter == 0:
+        input_counter += 1
+        return request_project_name()
+    
+    if input_counter == 1:
+        input_counter += 1
+        return request_user_query()
+
     url = 'http://localhost:8080/in'
     try:
         res = requests.get(url, data={"prompt":prompt})

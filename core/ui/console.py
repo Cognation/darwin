@@ -6,6 +6,24 @@ from core.ui.base import ProjectStage, UIBase, UIClosedError, UISource, UserInpu
 log = get_logger(__name__)
 
 import requests
+import re
+agents =[
+    "Architect",
+    "Code Monkey",
+    "Code Reviewer",
+    "Developer",
+    "Error Handler",
+    "Executor",
+    "Human Input",
+    "Orchestrator",
+    "Problem Solver",
+    "Spec Writer",
+    "Pythagora",
+    "Task Reviewer",
+    "Tech Lead",
+    "Technical Writer",
+    "Troubleshooter"
+]
 def post(data):
     url = 'http://localhost:8080/out'
     try:

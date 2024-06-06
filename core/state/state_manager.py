@@ -78,6 +78,16 @@ class StateManager:
             f"and initial state id={state.id} (step_index={state.step_index})"
         )
 
+        with open(f"../../../data/{name}/logs.json", "w") as f:
+            f.write(
+                {
+                    "project_id": project.id,
+                    "branch_id": branch.id,
+                    "state_id": state.id,
+                    "step_index": state.step_index
+                }
+            )
+
         self.current_session = session
         self.current_state = state
         self.next_state = state

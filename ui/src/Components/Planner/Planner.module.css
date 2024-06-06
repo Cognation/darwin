@@ -5,6 +5,7 @@
     margin-top: 2px;
     overflow: hidden;
     overflow: scroll;
+    padding-bottom: 20px;
 }
 
 .planner::-webkit-scrollbar {
@@ -32,6 +33,7 @@
     margin: 10px 10px;
     font-size: 18px;
     word-wrap: break-word;
+    padding: 20px;
 }
 
 
@@ -43,4 +45,9 @@
 .darkmode {
     color: white;
     background-color: rgb(32, 32, 32);
+}
+
+.markdown{
+    padding: 0px 20px 0px 0px;
+    overflow: scroll;
 }

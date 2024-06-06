@@ -15,6 +15,8 @@ import { ReactComponent as SETTING_SVG_WHITE } from "../../Assets/SVG/setting-wh
 import Setting from "../Setting/Setting";
 import OtherBoxes from "../Otherboxes/Manager";
 import { getCode } from "../../api/getCode";
+import { getstream } from "../../api/getstream";
+import { sendInput } from "../../api/sendInput";
 
 const Code = () => {
   const {
@@ -30,20 +32,27 @@ const Code = () => {
     editor_expanded,
     setEditor_expanded,
     plan,
-    setplan
+    setplan,
   } = useZustandStore();
   const [code, setcode] = useState(
     `print("Here is your personal software engineer 🙂")`
   );
   const [language, setlanguage] = useState("python");
   const [input_msg, setinput_msg] = useState("");
+  const [backendinput, setbackendinput] = useState("");
   const [istyping, setistyping] = useState(false);
   const [selected_file, setselected_file] = useState(null);
+  const [id, setid] = useState(null);
+  const [isinput, setisinput] = useState(false);
   // const [plan, setplan] = useState("");
   const [selected_file_language, setselected_file_language] = useState(
     selected_file?.language || "python"
   );
   const [issettingopen, setissettingopen] = useState(false);
+
+  useEffect(() => {
+    console.log("Backend input : ", backendinput);
+  }, [backendinput]);
 
   useEffect(() => {
     console.log("selected file : ", selected_file);
@@ -52,9 +61,9 @@ const Code = () => {
 
   const inputref = useRef(null);
 
-  useEffect(()=>{
+  useEffect(() => {
     setplan("");
-  } , [selectedProject]);
+  }, [selectedProject]);
 
   useEffect(() => {
     inputref?.current?.focus();
@@ -74,10 +83,9 @@ const Code = () => {
     <TerminalOutput>$ ⎕</TerminalOutput>,
   ]);
 
-  // Function to handle sending a message
-  const sendMessage = async (message) => {
+  const callchat = async (message) => {
     if (!selectedProject) {
-      alert("Please select the project first.");
+      // alert("Please select the project first.");
       return;
     }
     setistyping(true);
@@ -86,13 +94,6 @@ const Code = () => {
     setMessages(msgs);
     let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
     setLineData(ld);
-    let codee = "";
-
-    let pl = plan;
-
-    let iteration = 1;
-
-    console.log(selectedProject);
 
     const formData = new FormData();
     formData.append("project_name", selectedProject);
@@ -102,7 +103,64 @@ const Code = () => {
       const res_text = await getCode(formData);
 
       if (!res_text) {
-        alert("Error in backend.");
+        // alert("Error in backend.");
+        return;
+      }
+
+      console.log("Response : ", res_text);
+
+      sendMessage(message, msgs);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const send_input = async () => {
+    const formData = new FormData();
+    formData.append("prompt_id", id);
+    formData.append("response", backendinput);
+
+    console.log("FormData : ", JSON.stringify(formData));
+
+    const res_text = await sendInput(formData);
+
+    const res_status = await res_text.text();
+
+    console.log("Input req. ", res_status);
+
+    if (JSON.parse(res_status).status === "OK") {
+      let msgs = messages;
+      msgs.push({ text: backendinput, sender: "user" });
+      setMessages(msgs);
+      setisinput(false);
+    }
+  };
+
+  // Function to handle sending a message
+  const sendMessage = async (message, msgs) => {
+    // if (!selectedProject) {
+    //   alert("Please select the project first.");
+    //   return;
+    // }
+    // setistyping(true);
+    // let msgs = messages;
+    // msgs.push({ text: message, sender: "user" });
+    // setMessages(msgs);
+    // let ld = [<TerminalOutput>Output will appear here!!</TerminalOutput>];
+    // setLineData(ld);
+    let codee = "";
+
+    let pl = plan;
+
+    let iteration = 1;
+
+    console.log(selectedProject);
+
+    try {
+      const res_text = await getstream();
+
+      if (!res_text) {
+        // alert("Error in backend.");
         return;
       }
 
@@ -124,42 +182,67 @@ const Code = () => {
         console.log("Line : ", chunk);
 
         try {
-          const data = JSON.parse(chunk);
+          const data = chunk.trim().split("\n");
 
-          if (data?.summary_text) {
-            msgs.push({ text: data?.summary_text, sender: "bot" });
-            setMessages(msgs);
-          }
+          data.forEach((element) => {
+            const completeelm = JSON.parse(element);
+            const out = completeelm?.out;
+            console.log("Paresed Lines  : ", out);
+            if (out) {
+              pl = pl + out;
+              pl.replaceAll("json" , "");
+              pl.replaceAll("```json" , "");
+              pl.replaceAll("json```" , "");
+              setplan(pl);
+            }
 
-          if (data?.message) {
-            pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.message}`;
-            iteration++;
-            // pl.push(`${data?.message}\n\n`);
-            setplan(pl);
-          }
+            if (completeelm && completeelm.in) {
+              console.log("In : ", completeelm);
+              const id = completeelm.prompt_id;
+              console.log("ID : ", id);
+              setisinput(true);
+              setid(id);
+              setbackendinput("");
+            }
+          });
 
-          if (data?.web_search) {
-            pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.web_search}`;
-            iteration++;
-            // pl.push(`${data?.web_search}\n\n`);
-            setplan(pl);
-          }
+          // if (data?.summary_text) {
+          //   msgs.push({ text: data?.summary_text, sender: "bot" });
+          //   setMessages(msgs);
+          // }
 
-          if (data?.getIssueSummary) {
-            pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.getIssueSummary}`;
-            iteration++;
-            // pl.push(`${data?.web_search}\n\n`);
-            setplan(pl);
-          }
+          // if (data?.message) {
+          //   pl = pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.message}`;
+          //   iteration++;
+          //   // pl.push(`${data?.message}\n\n`);
+          //   setplan(pl);
+          // }
 
-          if (data?.console) {
-            let ld = lineData;
-            ld.push(<TerminalInput>{data?.console}</TerminalInput>);
-            ld.push(<TerminalInput>{`\n\n`}</TerminalInput>);
-            setLineData(ld);
-          }
+          // if (data?.web_search) {
+          //   pl =
+          //     pl + `\n\n\n **Iteration :** ${iteration}\n\n${data?.web_search}`;
+          //   iteration++;
+          //   // pl.push(`${data?.web_search}\n\n`);
+          //   setplan(pl);
+          // }
+
+          // if (data?.getIssueSummary) {
+          //   pl =
+          //     pl +
+          //     `\n\n\n **Iteration :** ${iteration}\n\n${data?.getIssueSummary}`;
+          //   iteration++;
+          //   // pl.push(`${data?.web_search}\n\n`);
+          //   setplan(pl);
+          // }
+
+          // if (data?.console) {
+          //   let ld = lineData;
+          //   ld.push(<TerminalInput>{data?.console}</TerminalInput>);
+          //   ld.push(<TerminalInput>{`\n\n`}</TerminalInput>);
+          //   setLineData(ld);
+          // }
         } catch (err) {
-          console.error("Error in parsing the content.");
+          console.log("Error in parsing the content.", err);
         }
 
         // setTimeout(() => {
@@ -171,7 +254,7 @@ const Code = () => {
     } catch (err) {
       console.log(err);
       setistyping(false);
-      alert("Please try again.");
+      // alert("Please try again.");
       return;
     }
   };
@@ -235,120 +318,13 @@ const Code = () => {
                             : null
                         }`}
                       >
-                        {message && message?.text &&
-                          
-                          // texts.map((item, index) => {
-                          //   if (
-                          //     item &&
-                          //     index === texts.length - 2 &&
-                          //     !texts[index + 1]
-                          //   ) {
-                          //     return (
-                          //       <>
-                          //         {item.startsWith("**") &&
-                          //         item.endsWith("**") ? (
-                          //           <span key={index}>
-                          //             <b className={styles.b}>
-                          //               <span>
-                          //                 {item.substring(2, item.length - 2)}
-                          //               </span>
-                          //             </b>
-                          //           </span>
-                          //         ) : item.startsWith("#") ? (
-                          //           <span key={index}>
-                          //             <b className={styles.b}>
-                          //               <span>{item.replaceAll("#", "")}</span>
-                          //             </b>
-                          //           </span>
-                          //         ) : (
-                          //           <span key={index}>
-                          //             <span>{item}</span>
-                          //           </span>
-                          //         )}
-                          //       </>
-                          //     );
-                          //   } else if (item) {
-                          //     if (index !== texts.length - 1) {
-                          //       return (
-                          //         <>
-                          //           {item.startsWith("**") &&
-                          //           item.endsWith("**") ? (
-                          //             <span key={index}>
-                          //               <b>
-                          //                 <span>
-                          //                   {item.substring(2, item.length - 2)}
-                          //                 </span>
-                          //               </b>
-                          //               <br />
-                          //               <br />
-                          //             </span>
-                          //           ) : item.startsWith("#") ? (
-                          //             <span key={index}>
-                          //               <b>
-                          //                 <span>
-                          //                   {item.replaceAll("#", "")}
-                          //                 </span>
-                          //               </b>
-                          //               <br />
-                          //               <br />
-                          //             </span>
-                          //           ) : (
-                          //             <span key={index}>
-                          //               <span>{item}</span>
-                          //               <br />
-                          //               <br />
-                          //             </span>
-                          //           )}
-                          //         </>
-                          //       );
-                          //     } else {
-                          //       return (
-                          //         <>
-                          //           {item.startsWith("**") &&
-                          //           item.endsWith("**") ? (
-                          //             <span key={index}>
-                          //               <b className={styles.b}>
-                          //                 <span>
-                          //                   {item.substring(2, item.length - 2)}
-                          //                 </span>
-                          //               </b>
-                          //             </span>
-                          //           ) : item.startsWith("#") ? (
-                          //             <span key={index}>
-                          //               <b className={styles.b}>
-                          //                 <span>
-                          //                   {item.replaceAll("#", "")}
-                          //                 </span>
-                          //               </b>
-                          //             </span>
-                          //           ) : (
-                          //             <span key={index}>
-                          //               <span>{item}</span>
-                          //             </span>
-                          //           )}
-                          //         </>
-                          //       );
-                          //     }
-                          //   }
-                          // })}
+                        {message && message?.text && (
                           <Markdown>{message?.text}</Markdown>
-                        }
+                        )}
                       </div>
                     </div>
                   );
                 })}
-              {/* {!issettingopen && istyping ? (
-                <div
-                  ref={msgref2}
-                  className={`${styles.message} ${styles["bot"]} ${
-                    theme === "Dark" ? styles.botdarkmode : null
-                  }`}
-                >
-                  Typing...
-                </div>
-              ) : (
-                ""
-              )} */}
               <div ref={msgref}></div>
               {/* ) : (
             <Setting />
@@ -382,7 +358,7 @@ const Code = () => {
             <textarea
               type="text"
               ref={inputref}
-              value={input_msg}
+              value={!isinput ? input_msg : backendinput}
               rows={
                 input_msg.split(" ").length > 20 || input_msg.length > 50
                   ? 10
@@ -390,14 +366,20 @@ const Code = () => {
               }
               placeholder="Ask Darwin..."
               onChange={(e) => {
-                setinput_msg(e.target.value);
+                !isinput
+                  ? setinput_msg(e.target.value)
+                  : setbackendinput(e.target.value);
               }}
               onKeyPress={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   e.target.value = "";
                   setinput_msg("");
-                  sendMessage(input_msg);
+                  if (isinput) {
+                    send_input();
+                  } else {
+                    callchat(input_msg);
+                  }
                 }
               }}
               className={`${styles.input} ${

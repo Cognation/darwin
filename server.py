@@ -194,7 +194,8 @@ async def delete_project(request: Request):
             db.rem(key)
             return {"message": "Project deleted successfully"}
     return {"message": "Project not found"}
-    
+
+# get    
 @app.get("/get_project_names") # returns key value pairs of id and project name
 async def get_projects():
     list = []
@@ -213,6 +214,7 @@ async def catch(request: Request):
     return {"status": "OK"}
 
 ### HANDLING STREAM
+# get
 @app.get('/stream')
 async def stream_data():
     async def generate():
@@ -228,8 +230,10 @@ async def stream_data():
 ### HANDLING INPUT STREAMING
 input_messages  = {}
 prompt_id = ""
+# get
 @app.get("/in")
 async def catch_request(request: Request):
+    global input_messages
     data = await request.form()
     message = data.get("prompt")
     prompt_id = str(uuid4())
@@ -240,13 +244,13 @@ async def catch_request(request: Request):
             del input_messages[prompt_id]
             return {"input": response}
         await asyncio.sleep(.5)
-
+# get
 @app.get("/request_project_name")
 async def get_project_name(request: Request):
     global project_name
     print("Sending project name:", project_name)
     return {"project_name": project_name}
-
+# get
 @app.get("/request_user_query")
 async def get_user_query(request: Request):
     global StateOfMind
@@ -255,10 +259,12 @@ async def get_user_query(request: Request):
 
 @app.post("/in/response")
 async def catch_response(request: Request):
+    global input_messages
     data = await request.form()
     prompt_id = data.get("prompt_id")
     response = data.get("response")
     input_messages[prompt_id] = response
+    print(input_messages)
     return {"status": "OK"}
 
 

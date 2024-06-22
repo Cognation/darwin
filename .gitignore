@@ -10,3 +10,4 @@ pythagora.db
 pythagora.log
 ./config.json
 ./workspace
+__pycache__

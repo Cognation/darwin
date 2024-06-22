@@ -27,4 +27,5 @@ import sys
 #     sys.exit(255)
 from core.cli.main import run_pythagora
 #sys.exit(run_pythagora())
-run_pythagora()
+project_id = "3a392ba1-4ede-4c8c-a905-2d3a678a0282"
+run_pythagora(project_id)

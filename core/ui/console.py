@@ -24,10 +24,16 @@ agents =[
     "Technical Writer",
     "Troubleshooter"
 ]
+agent_tag = None
 def post(data):
     url = 'http://localhost:8080/out'
+    agent = re.match(r"\[(.*?)\]", data)
+    global agent_tag
+    if agent:
+        agent_tag = agent.group().replace("[","").replace("]","")
+        data = data.replace(f"[{agent_tag}]", "")
     try:
-        res = requests.post(url, data={"message":data})
+        res = requests.post(url, data={"agent":agent_tag,"text":data})
         print(res.json())
     except requests.exceptions.RequestException as e:
         print("Error : ", str(e))

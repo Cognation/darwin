@@ -77,17 +77,13 @@ class StateManager:
             f'with default branch "{branch.name}" (id={branch.id}) '
             f"and initial state id={state.id} (step_index={state.step_index})"
         )
+        # if not os.path.exists(f"../../data"):
+        #     os.makedirs(f"../../data")
+        import pickledb
+        db = pickledb.load('./data/state.db', True) 
+        db.set(f"{name}", f"{project.id}")
 
-        with open(f"../../../data/{name}/logs.json", "w") as f:
-            f.write(
-                {
-                    "project_id": project.id,
-                    "branch_id": branch.id,
-                    "state_id": state.id,
-                    "step_index": state.step_index
-                }
-            )
-
+        print(f"Project ID: {project.id}")
         self.current_session = session
         self.current_state = state
         self.next_state = state

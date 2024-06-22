@@ -200,10 +200,12 @@ async def async_main(
     return success
 
 
-def run_pythagora():
+def run_pythagora(project_id: str = None):
     ui, db, args = init()
     if not ui or not db:
         return -1
+    if project_id:
+        args.project = project_id
     success = run(async_main(ui, db, args))
     return 0 if success else -1
 

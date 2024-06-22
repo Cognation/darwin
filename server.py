@@ -209,8 +209,9 @@ pyth_messages = []
 @app.post("/out")
 async def catch(request: Request):
     data = await request.form()
-    message = data.get("message")
-    pyth_messages.append({"out":message})
+    agent = data.get("agent")
+    text = data.get("text")
+    pyth_messages.append({"agent":agent, "text":text})
     return {"status": "OK"}
 
 ### HANDLING STREAM
@@ -238,6 +239,9 @@ async def catch_request(request: Request):
     message = data.get("prompt")
     prompt_id = str(uuid4())
     pyth_messages.append({"in":message, "prompt_id":prompt_id})
+    print(f"""
+          curl --location 'http://localhost:8080/in/response' --form 'prompt_id="{prompt_id}"' --form 'response=""'
+          """)
     while True:
         if prompt_id in input_messages:
             response = input_messages[prompt_id]
@@ -296,6 +300,13 @@ async def chat(request: Request,file: UploadFile = None,image: UploadFile = None
 
 
 import subprocess
+from core.cli.main import run_pythagora
+
+def get_project_id(project_name):
+    db_path = os.path.join(os.getcwd(), 'data', 'state.db')
+    db = pickledb.load(db_path, True)
+    project_id = db.get(project_name)
+    return project_id
 
 def chatGPT(project_name,original_query):
     global history
@@ -303,6 +314,7 @@ def chatGPT(project_name,original_query):
     global StateOfMind
     global cc
     global iter
+    cont = False
     prevcall = None
     while(True):
         iter+=1
@@ -342,20 +354,12 @@ def chatGPT(project_name,original_query):
             print(parameter)
             try:
                 if func == "coder":
-                    # prevcall = "coder"
-                    # query = parameter['query']
-                    # coder = Coder(project_name)
-                    # for chunk in coder.code(query,web_search_response):
-                    #     if json.loads(chunk) == {"exit":True}:
-                    #         break
-                    #     yield chunk
-                    #     update_db(project_name,json.loads(chunk))
-                    # StateOfMind = "The coder function took the following steps :\n" + coder.summary
-                    # prevcoder = True
-                    # cc+=1
-                    # if cc >= 2:
-                    #     StateOfMind = "Coder call finished. Call the summary_text function!"
-                    subprocess.run(["python", "main.py"])
+                    if cont:
+                        run_pythagora(get_project_id(project_name))
+                    succ = run_pythagora()
+                    if succ==-1:
+                        cont = True
+                        # get relevant error information
                     break
                     
                 elif func == "web_search":
